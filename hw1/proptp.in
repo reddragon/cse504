@@ -1,0 +1,8 @@
+p & q
+p & (q | r)
+p & !(p | q)
+p -> q & !p
+rain -> wet
+sprinkler -> wet
+night -> ! sprinkler
+dark -> rain | night

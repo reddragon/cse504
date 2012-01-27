@@ -1,11 +1,11 @@
-snazzle: lex.yy.c snazzle.tab.c snazzle.tab.h
-	g++ snazzle.tab.c lex.yy.c -lfl -o snazzle
+snazzle: lex.yy.c proptp.tab.c proptp.tab.h
+	g++ proptp.tab.c lex.yy.c -lfl -o proptp
 
-snazzle.tab.c snazzle.tab.h: snazzle.y
-	bison -d snazzle.y
+proptp.tab.c proptp.tab.h: proptp.y
+	bison -d proptp.y
 
-lex.yy.c: snazzle.l snazzle.tab.h
-	flex snazzle.l
+lex.yy.c: proptp.l proptp.tab.h
+	flex proptp.l
 
 clean:
-	rm snazzle lex.yy.c snazzle.tab.h snazzle.tab.c
+	rm proptp lex.yy.c proptp.tab.h proptp.tab.c
