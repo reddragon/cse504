@@ -2,6 +2,9 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <string>
+#include <stack>
 
 using namespace std;
 
@@ -12,6 +15,8 @@ extern "C" int lno;
 extern "C" char *yytext;
 
 void yyerror(const char *s);
+
+std::stack<std::string> tokens;
 
 typedef struct ASTNode {
     int type; // yytokentype::...
@@ -35,19 +40,30 @@ print_AST(struct ASTNode *n);
 }
 
 %token <id> STRING
-%token ENDL IMPLIES
+%token ENDL IMPLIES UNKNOWN
 
 %type<astnode> S T U V
 
 %%
 
-LINES: LINES { cerr<<"Menghani\n"; } LINE | LINE { cerr<<"Men2\n"; };
+LINES: LINES {
+    cerr<<"[1] Next line starts\n";
+ } LINE
+ | LINE {
+     cerr<<"[2] Next line starts\n";
+   };
+
 LINE:  S '.' {
-    print_AST($1); cout<<endl;
+    print_AST($1);
+    while (!tokens.empty()) {
+        tokens.pop();
+    }
+    cout<<endl;
  } ENDL
  | ENDL;
 
 S:     T IMPLIES S {
+    tokens.push("->");
     ASTNode *nn = new ASTNode(IMPLIES);
     nn->left    = $1;
     nn->right   = $3;
@@ -58,6 +74,7 @@ S:     T IMPLIES S {
   };
 
 T:     U '|' T {
+    tokens.push("|");
     ASTNode *nn = new ASTNode('|');
     nn->left    = $1;
     nn->right   = $3;
@@ -68,6 +85,7 @@ T:     U '|' T {
   };
 
 U:     V '&' U {
+    tokens.push("&");
     ASTNode *nn = new ASTNode('&');
     nn->left    = $1;
     nn->right   = $3;
@@ -81,11 +99,13 @@ V:     '(' S ')' {
     $$ = $2;
  }
 | '!' V {
+    tokens.push("!");
     ASTNode *nn = new ASTNode('!');
     nn->right   = $2;
     $$ = nn;
  }
 | STRING {
+    tokens.push($1);
     ASTNode *nn = new ASTNode(STRING);
     nn->id = $1;
     $$ = nn;
@@ -121,7 +141,12 @@ void yyerror(const char *s) {
         fprintf(stderr, "Error on line %d, expected '.'\n", lno);
     }
     else {
-        fprintf(stderr, "Error on line %d, unexpected token '%s'\n", lno, yytext);
+        if (tokens.empty()) {
+            fprintf(stderr, "Error on line %d, unexpected token '%s' at the beginning of the line\n", lno, yytext);
+        }
+        else {
+            fprintf(stderr, "Error on line %d, unexpected token '%s' after '%s'\n", lno, yytext, tokens.top().c_str());
+        }
     }
     exit(-1);
 }

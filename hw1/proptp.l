@@ -9,7 +9,7 @@ int lno = 1;
 #include "proptp.tab.h"
 %}
 %%
-[ \t]  ;
+[\ \t]  ;
 [\n]          { ++lno; return ENDL; }
 \->           { return IMPLIES; }
 [&\|\(\)\.]   { return yytext[0]; }
@@ -17,6 +17,6 @@ int lno = 1;
   yylval.id = strdup(yytext);
   return STRING;
 }
-. ;
+.             { return UNKNOWN; }
 %%
 
