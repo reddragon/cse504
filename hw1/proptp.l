@@ -12,7 +12,7 @@ int lno = 1;
 [\ \t]  ;
 [\n]          { ++lno; return ENDL; }
 \->           { return IMPLIES; }
-[&\|\(\)\.]   { return yytext[0]; }
+[&\|\(\)\.!]   { return yytext[0]; }
 [a-zA-Z0-9]+  {
   yylval.id = strdup(yytext);
   return STRING;
