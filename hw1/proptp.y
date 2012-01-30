@@ -16,7 +16,7 @@ extern "C" char *yytext;
 
 void yyerror(const char *s);
 
-std::stack<std::string> tokens;
+
 
 typedef struct ASTNode {
     int type; // yytokentype::...
@@ -31,6 +31,8 @@ typedef struct ASTNode {
 
 static void
 print_AST(struct ASTNode *n);
+
+std::stack<ASTNode*> types;
 
 %}
 
@@ -47,26 +49,34 @@ print_AST(struct ASTNode *n);
 %%
 
 LINES: LINES {
+    // Evaluate expression here.
     cerr<<"[1] Next line starts\n";
  } LINE
+ | error { yyerrok; } LINE
  | LINE {
+     // Evaluate expression here.
      cerr<<"[2] Next line starts\n";
    };
 
+
 LINE:  S '.' {
+    cout<<"AST: ";
     print_AST($1);
-    while (!tokens.empty()) {
-        tokens.pop();
+    while (!types.empty()) {
+        types.pop();
     }
     cout<<endl;
  } ENDL
  | ENDL;
 
+
 S:     T IMPLIES S {
-    tokens.push("->");
+    // cerr<<"Pushing: ->\n";
     ASTNode *nn = new ASTNode(IMPLIES);
     nn->left    = $1;
     nn->right   = $3;
+    types.pop(); types.pop();
+    types.push(nn);
     $$ = nn;
  }
 | T {
@@ -74,10 +84,11 @@ S:     T IMPLIES S {
   };
 
 T:     U '|' T {
-    tokens.push("|");
     ASTNode *nn = new ASTNode('|');
     nn->left    = $1;
     nn->right   = $3;
+    types.pop(); types.pop();
+    types.push(nn);
     $$ = nn;
  }
 | U {
@@ -85,10 +96,11 @@ T:     U '|' T {
   };
 
 U:     V '&' U {
-    tokens.push("&");
     ASTNode *nn = new ASTNode('&');
     nn->left    = $1;
     nn->right   = $3;
+    types.pop(); types.pop();
+    types.push(nn);
     $$ = nn;
  }
 | V {
@@ -99,15 +111,17 @@ V:     '(' S ')' {
     $$ = $2;
  }
 | '!' V {
-    tokens.push("!");
     ASTNode *nn = new ASTNode('!');
     nn->right   = $2;
+    types.pop();
+    types.push(nn);
     $$ = nn;
  }
 | STRING {
-    tokens.push($1);
+    // cerr<<"Pushing: "<<$1<<endl;
     ASTNode *nn = new ASTNode(STRING);
     nn->id = $1;
+    types.push(nn);
     $$ = nn;
   };
 
@@ -130,10 +144,51 @@ print_AST(struct ASTNode *n) {
     print_AST(n->right);
 }
 
+
+static struct ASTNode*
+last_token(struct ASTNode *n) {
+    if (!n) {
+        return NULL;
+    }
+    struct ASTNode *nn = last_token(n->right);
+    if (nn) {
+        return nn;
+    }
+    nn = last_token(n->left);
+    if (nn) {
+        return nn;
+    }
+    return n;
+}
+
+std::string
+token_to_string(struct ASTNode* n) {
+    // cerr<<"token_to_string, "<<n<<"\n";
+    if (n->type == STRING) {
+        return n->id;
+    }
+    switch (n->type) {
+    case ')':
+        return ")";
+    case '(':
+        return "(";
+    case IMPLIES:
+        return "->";
+    case '&':
+        return "&";
+    case '|':
+        return "|";
+    case '!':
+        return "!";
+    default:
+        return "AIEE!!";
+    }
+}
+
 int
 main() {
-    yyparse();
-    return 0;
+    int ret = yyparse();
+    return ret;
 }
 
 void yyerror(const char *s) {
@@ -141,12 +196,13 @@ void yyerror(const char *s) {
         fprintf(stderr, "Error on line %d, expected '.'\n", lno);
     }
     else {
-        if (tokens.empty()) {
+        if (types.empty()) {
             fprintf(stderr, "Error on line %d, unexpected token '%s' at the beginning of the line\n", lno, yytext);
         }
         else {
-            fprintf(stderr, "Error on line %d, unexpected token '%s' after '%s'\n", lno, yytext, tokens.top().c_str());
+            std::string lt = token_to_string(last_token(types.top()));
+            fprintf(stderr, "Error on line %d, unexpected token '%s' after '%s'\n", lno, yytext, lt.c_str());
         }
     }
-    exit(-1);
+    // exit(-1);
 }
