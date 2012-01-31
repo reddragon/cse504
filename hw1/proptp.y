@@ -52,7 +52,6 @@ LINES: LINES {
     // Evaluate expression here.
     cerr<<"[1] Next line starts\n";
  } LINE
- | error { yyerrok; } LINE
  | LINE {
      // Evaluate expression here.
      cerr<<"[2] Next line starts\n";
@@ -67,6 +66,7 @@ LINE:  S '.' {
     }
     cout<<endl;
  } ENDL
+ | error ENDL { yyerrok; }
  | ENDL;
 
 
@@ -192,6 +192,9 @@ main() {
 }
 
 void yyerror(const char *s) {
+    // printf("ERROR: %s\n", s);
+    // return;
+
     if (yytext && yytext[0] == '\n') {
         fprintf(stderr, "Error on line %d, expected '.'\n", lno);
     }
