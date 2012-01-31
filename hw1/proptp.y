@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <map>
 
 using namespace std;
 
@@ -32,7 +33,13 @@ typedef struct ASTNode {
 static void
 print_AST(struct ASTNode *n);
 
+static void
+check_validity();
+
 std::stack<ASTNode*> types;
+std::vector<ASTNode*> expressions;
+std::map<std::string, bool> symtab;
+
 
 %}
 
@@ -48,23 +55,27 @@ std::stack<ASTNode*> types;
 
 %%
 
-LINES: LINES {
+LINES: LINES LINE {
     // Evaluate expression here.
-    cerr<<"[1] Next line starts\n";
- } LINE
+    check_validity();
+ }
  | LINE {
      // Evaluate expression here.
-     cerr<<"[2] Next line starts\n";
+     check_validity();
    };
 
 
 LINE:  S '.' {
-    cout<<"AST: ";
-    print_AST($1);
+    cout<<"AST: "; print_AST($1); cout<<endl;
+
+    // Add the AST to the list of expressions.
+    expressions.push_back($1);
+
+    // Clear the 'types' stack.
     while (!types.empty()) {
         types.pop();
     }
-    cout<<endl;
+
  } ENDL
  | error ENDL { yyerrok; }
  | ENDL;
@@ -190,6 +201,15 @@ main() {
     int ret = yyparse();
     return ret;
 }
+
+static void
+check_validity() {
+    // Check the validity of all expressions till now and print a
+    // message accordingly.
+
+    fprintf(stderr, "%d expressions to check for validity.\n", expressions.size());
+}
+
 
 void yyerror(const char *s) {
     // printf("ERROR: %s\n", s);
