@@ -6,6 +6,7 @@
 #include <string>
 #include <stack>
 #include <map>
+#include <iterator>
 
 using namespace std;
 
@@ -38,8 +39,7 @@ check_validity();
 
 std::stack<ASTNode*> types;
 std::vector<ASTNode*> expressions;
-std::map<std::string, bool> symtab;
-
+std::map<std::string, bool> symtab, exp_symtab;
 
 %}
 
@@ -56,13 +56,29 @@ std::map<std::string, bool> symtab;
 %%
 
 LINES: LINES LINE {
-    // Evaluate expression here.
+    // Add the symbols found in the current expression to the
+		// global symbol table.
+   	for(map<std::string, bool>::iterator it = exp_symtab.begin(); \
+			it != exp_symtab.end(); it++)
+			symtab.insert(*it);
+
+		exp_symtab.clear();
+ 		
+		// Evaluate expression here.
     check_validity();
  }
  | LINE {
-     // Evaluate expression here.
-     check_validity();
-   };
+		// Add the symbols found in the current expression to the
+		// global symbol table.
+   	for(map<std::string, bool>::iterator it = exp_symtab.begin(); \
+			it != exp_symtab.end(); it++)
+			symtab.insert(*it);
+
+		exp_symtab.clear();
+		
+		// Evaluate expression here.
+    check_validity();
+	};
 
 
 LINE:  S '.' {
@@ -132,7 +148,11 @@ V:     '(' S ')' {
     // cerr<<"Pushing: "<<$1<<endl;
     ASTNode *nn = new ASTNode(STRING);
     nn->id = $1;
-    types.push(nn);
+   	
+		// Insert into the expression symbol table
+		exp_symtab[(std::string)$1] = 0;
+    
+		types.push(nn);
     $$ = nn;
   };
 
@@ -208,12 +228,23 @@ check_validity() {
     // message accordingly.
 
     fprintf(stderr, "%d expressions to check for validity.\n", expressions.size());
+		
+		// Printing the tables
+		
+		cout << "Symbol Table: " << endl;
+
+		for(std::map<std::string, bool>::iterator it = symtab.begin(); \
+			it != symtab.end(); it++)
+			cout << it->first << endl;
 }
 
 
 void yyerror(const char *s) {
     // printf("ERROR: %s\n", s);
     // return;
+		
+		// Clear the expression symbol table, so that it is reusable
+		exp_symtab.clear();
 
     if (yytext && yytext[0] == '\n') {
         fprintf(stderr, "Error on line %d, expected '.'\n", lno);
