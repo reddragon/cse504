@@ -37,6 +37,36 @@ print_AST(struct ASTNode *n);
 static void
 check_validity();
 
+
+template <typename Func>
+bool
+_all_combinations(int n, Func f, std::vector<bool> &bit_string) {
+    // Generates all 2^n bit-strings and passes them to 'f'
+    if (!n) {
+        return f(bit_string);
+    }
+
+    bit_string.push_back(0);
+    int ret = _all_combinations(n-1, f, bit_string);
+    if (ret) {
+        return ret;
+    }
+    bit_string.back() = 1;
+    ret = _all_combinations(n-1, f, bit_string);
+    bit_string.pop_back();
+    return ret;
+}
+
+
+// If the function 'f' returns 'true', then recursion will stop.
+template <typename Func>
+bool
+all_combinations(int n, Func f) {
+    std::vector<bool> bit_string;
+    return _all_combinations(n, f, bit_string);
+}
+
+
 std::stack<ASTNode*> types;
 std::vector<ASTNode*> expressions;
 std::map<std::string, bool> symtab, exp_symtab;
@@ -64,20 +94,20 @@ void clear_types() {
 
 LINES: LINES LINE {
     // Add the symbols found in the current expression to the
-		// global symbol table.
-		symtab.insert(exp_symtab.begin(), exp_symtab.end());		
+    // global symbol table.
+    symtab.insert(exp_symtab.begin(), exp_symtab.end());		
 
-		// Evaluate expression here.
+    // Evaluate expression here.
     check_validity();
  }
  | LINE {
-		// Add the symbols found in the current expression to the
-		// global symbol table.
-		symtab.insert(exp_symtab.begin(), exp_symtab.end());
-
-		// Evaluate expression here.
-    check_validity();
-	};
+     // Add the symbols found in the current expression to the
+     // global symbol table.
+     symtab.insert(exp_symtab.begin(), exp_symtab.end());
+     
+     // Evaluate expression here.
+     check_validity();
+   };
 
 
 LINE:  S '.' {
@@ -204,8 +234,19 @@ token_to_string(struct ASTNode* n) {
     }
 }
 
+bool
+print_bit_string(std::vector<bool> &bit_string) {
+    for (int i = 0; i < bit_string.size(); ++i) {
+        cout<<bit_string[i]<<", ";
+    }
+    cout<<endl;
+    return false;
+}
+
 int
 main() {
+    all_combinations(10, print_bit_string);
+
     int ret = yyparse();
     return ret;
 }
