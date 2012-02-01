@@ -26,8 +26,8 @@ typedef struct ASTNode {
     int val;
     ASTNode *left, *right;
 
-    ASTNode(int _type)
-    : type(_type), left(NULL), right(NULL)
+    ASTNode(int _type, ASTNode *l = NULL, ASTNode *r = NULL)
+    : type(_type), left(l), right(r)
     { }
 } ASTNode;
 
@@ -94,9 +94,7 @@ LINE:  S '.' {
 
 S:     T IMPLIES S {
     // cerr<<"Pushing: ->\n";
-    ASTNode *nn = new ASTNode(IMPLIES);
-    nn->left    = $1;
-    nn->right   = $3;
+    ASTNode *nn = new ASTNode(IMPLIES, $1, $3);
     types.pop(); types.pop();
     types.push(nn);
     $$ = nn;
@@ -106,9 +104,7 @@ S:     T IMPLIES S {
   };
 
 T:     U '|' T {
-    ASTNode *nn = new ASTNode('|');
-    nn->left    = $1;
-    nn->right   = $3;
+    ASTNode *nn = new ASTNode('|', $1, $3);
     types.pop(); types.pop();
     types.push(nn);
     $$ = nn;
@@ -118,9 +114,7 @@ T:     U '|' T {
   };
 
 U:     V '&' U {
-    ASTNode *nn = new ASTNode('&');
-    nn->left    = $1;
-    nn->right   = $3;
+    ASTNode *nn = new ASTNode('&', $1, $3);
     types.pop(); types.pop();
     types.push(nn);
     $$ = nn;
@@ -133,8 +127,7 @@ V:     '(' S ')' {
     $$ = $2;
  }
 | '!' V {
-    ASTNode *nn = new ASTNode('!');
-    nn->right   = $2;
+    ASTNode *nn = new ASTNode('!', NULL, $2);
     types.pop();
     types.push(nn);
     $$ = nn;
