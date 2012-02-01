@@ -41,6 +41,13 @@ std::stack<ASTNode*> types;
 std::vector<ASTNode*> expressions;
 std::map<std::string, bool> symtab, exp_symtab;
 
+void clear_types() {
+    // Clear the 'types' stack.
+    while (!types.empty()) {
+        types.pop();
+    }
+}
+
 %}
 
 %union {
@@ -82,11 +89,7 @@ LINE:  S '.' {
 
     // Add the AST to the list of expressions.
     expressions.push_back($1);
-
-    // Clear the 'types' stack.
-    while (!types.empty()) {
-        types.pop();
-    }
+    clear_types();
 
  } ENDL
  | error ENDL { yyerrok; }
