@@ -68,10 +68,8 @@ LINES: LINES LINE {
  | LINE {
 		// Add the symbols found in the current expression to the
 		// global symbol table.
-   	for(map<std::string, bool>::iterator it = exp_symtab.begin(); \
-			it != exp_symtab.end(); it++)
-			symtab.insert(*it);
-		
+		symtab.insert(exp_symtab.begin(), exp_symtab.end());
+
 		// Evaluate expression here.
     check_validity();
 	};
