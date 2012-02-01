@@ -62,8 +62,6 @@ LINES: LINES LINE {
 			it != exp_symtab.end(); it++)
 			symtab.insert(*it);
 
-		exp_symtab.clear();
- 		
 		// Evaluate expression here.
     check_validity();
  }
@@ -73,8 +71,6 @@ LINES: LINES LINE {
    	for(map<std::string, bool>::iterator it = exp_symtab.begin(); \
 			it != exp_symtab.end(); it++)
 			symtab.insert(*it);
-
-		exp_symtab.clear();
 		
 		// Evaluate expression here.
     check_validity();
@@ -150,7 +146,7 @@ V:     '(' S ')' {
     nn->id = $1;
    	
 		// Insert into the expression symbol table
-		exp_symtab[(std::string)$1] = 0;
+		exp_symtab[$1] = 0;
     
 		types.push(nn);
     $$ = nn;
