@@ -167,10 +167,10 @@ V:     '(' S ')' {
     ASTNode *nn = new ASTNode(STRING);
     nn->id = $1;
    	
-		// Insert into the expression symbol table
-		exp_symtab[$1] = 0;
+    // Insert into the expression symbol table
+    exp_symtab[$1] = 0;
     
-		types.push(nn);
+	types.push(nn);
     $$ = nn;
   };
 
@@ -258,13 +258,13 @@ check_validity() {
 
     fprintf(stderr, "%d expressions to check for validity.\n", expressions.size());
 		
-		// Printing the tables
+    // Printing the tables
 		
-		cout << "Symbol Table: " << endl;
+	cout << "Symbol Table: " << endl;
 
-		for(std::map<std::string, bool>::iterator it = symtab.begin(); \
-			it != symtab.end(); it++)
-			cout << it->first << endl;
+	for(std::map<std::string, bool>::iterator it = symtab.begin(); \
+		it != symtab.end(); it++)
+	    cout << it->first << endl;
 }
 
 
@@ -272,8 +272,8 @@ void yyerror(const char *s) {
     // printf("ERROR: %s\n", s);
     // return;
 		
-		// Clear the expression symbol table, so that it is reusable
-		exp_symtab.clear();
+	// Clear the expression symbol table, so that it is reusable
+    exp_symtab.clear();
 
     if (yytext && yytext[0] == '\n') {
         fprintf(stderr, "Error on line %d, expected '.'\n", lno);
