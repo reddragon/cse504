@@ -341,16 +341,23 @@ void yyerror(const char *s) {
     // Clear the expression symbol table, so that it is reusable
     exp_symtab.clear();
 
+    // Why do errors go to stdout?
+    // 
+    // Check: http://www.cs.sunysb.edu/~cram/cse504/Spring12/Homeworks/hw1.html
+    // 
+    // "All output from the program (including error messages!) should
+    // go to standard output."
+    // 
     if (yytext && yytext[0] == '\n') {
-        fprintf(stderr, "Error on line %d, expected '.'\n", lno);
+        fprintf(stdout, "Error on line %d, expected '.'\n", lno);
     }
     else {
         if (types.empty()) {
-            fprintf(stderr, "Error on line %d, unexpected token '%s' at the beginning of the line\n", lno, yytext);
+            fprintf(stdout, "Error on line %d, unexpected token '%s' at the beginning of the line\n", lno, yytext);
         }
         else {
             std::string lt = token_to_string(last_token(types.top()));
-            fprintf(stderr, "Error on line %d, unexpected token '%s' after '%s'\n", lno, yytext, lt.c_str());
+            fprintf(stdout, "Error on line %d, unexpected token '%s' after '%s'\n", lno, yytext, lt.c_str());
         }
     }
     // exit(-1);
