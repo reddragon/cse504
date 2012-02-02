@@ -8,6 +8,8 @@
 #include <map>
 #include <iterator>
 
+#include <assert.h>
+
 using namespace std;
 
 extern "C" int yylex();
@@ -31,16 +33,29 @@ typedef struct ASTNode {
     { }
 } ASTNode;
 
+typedef std::map<std::string, bool> symtab_t;
+ASTNode* root = NULL;
+std::stack<ASTNode*> types;
+symtab_t symtab, exp_symtab;
+
+// Number of valid expressions entered.
+int nexpr = 0;
+
+
 static void
 print_AST(struct ASTNode *n);
 
 static void
 check_validity();
 
+static bool
+evaluate(ASTNode *n);
 
+
+// If the function 'f' returns 'true', then recursion will stop.
 template <typename Func>
 bool
-_all_combinations(int n, Func f, std::vector<bool> &bit_string) {
+_all_combinations(int n, Func const &f, std::vector<bool> &bit_string) {
     // Generates all 2^n bit-strings and passes them to 'f'
     if (!n) {
         return f(bit_string);
@@ -59,17 +74,16 @@ _all_combinations(int n, Func f, std::vector<bool> &bit_string) {
 
 
 // If the function 'f' returns 'true', then recursion will stop.
+//
+// The return value is either 'true' if the function ever returns
+// true, or 'flase' if it never returns true.
 template <typename Func>
 bool
-all_combinations(int n, Func f) {
+all_combinations(int n, Func const &f) {
     std::vector<bool> bit_string;
     return _all_combinations(n, f, bit_string);
 }
 
-
-std::stack<ASTNode*> types;
-std::vector<ASTNode*> expressions;
-std::map<std::string, bool> symtab, exp_symtab;
 
 void clear_types() {
     // Clear the 'types' stack.
@@ -111,10 +125,17 @@ LINES: LINES LINE {
 
 
 LINE:  S '.' {
-    cout<<"AST: "; print_AST($1); cout<<endl;
+    // cout<<"AST: "; print_AST($1); cout<<endl;
+
+    ++nexpr;
 
     // Add the AST to the list of expressions.
-    expressions.push_back($1);
+    if (!root) {
+        root = $1;
+    }
+    else {
+        root = new ASTNode('&', $1, root);
+    }
     clear_types();
 
  } ENDL
@@ -245,25 +266,80 @@ print_bit_string(std::vector<bool> &bit_string) {
 
 int
 main() {
-    all_combinations(10, print_bit_string);
+    // all_combinations(10, print_bit_string);
 
     int ret = yyparse();
     return ret;
 }
+
+struct Evaluator {
+    ASTNode *root;
+    mutable symtab_t variables;
+
+    Evaluator(ASTNode *_root, symtab_t _variables)
+    : root(_root), variables(_variables)
+    { }
+
+    bool
+    operator()(std::vector<bool> const& bit_string) const {
+        int ctr = 0;
+        for (symtab_t::iterator i = this->variables.begin(); i != this->variables.end(); ++i) {
+            i->second = bit_string[ctr++];
+        }
+
+        return this->_eval(this->root);
+    }
+
+    bool
+    _eval(ASTNode *n) const {
+        assert(n);
+
+        switch (n->type) {
+        case '&':
+            return _eval(n->left) && _eval(n->right);
+        case '|':
+            return _eval(n->left) || _eval(n->right);
+        case IMPLIES:
+            return !_eval(n->left) || _eval(n->right);
+        case '!':
+            return !_eval(n->right);
+        case STRING:
+            return this->variables[n->id];
+        default:
+            cerr<<"Invalid type in Evaluator::_eval\n";
+            exit(-1);
+        }
+    }
+
+};
+
+
+static bool
+evaluate(ASTNode *n) {
+    Evaluator eval(root, symtab);
+
+    bool val = all_combinations(symtab.size(), eval);
+    printf("%s\n", val ? "Ok" : "No");
+}
+
+
 
 static void
 check_validity() {
     // Check the validity of all expressions till now and print a
     // message accordingly.
 
-    fprintf(stderr, "%d expressions to check for validity.\n", expressions.size());
-		
+    // fprintf(stderr, "%d expressions to check for validity.\n", nexpr);
+
     // Printing the tables
+    /*
     cout << "Symbol Table: " << endl;
 
     for(std::map<std::string, bool>::iterator it = symtab.begin(); \
 	it != symtab.end(); it++)
-	cout << it->first << endl;
+	cerr << it->first << endl;
+    */
+    evaluate(root);
 }
 
 
