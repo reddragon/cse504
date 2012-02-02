@@ -106,23 +106,8 @@ void clear_types() {
 
 %%
 
-LINES: LINES LINE {
-    // Add the symbols found in the current expression to the
-    // global symbol table.
-    symtab.insert(exp_symtab.begin(), exp_symtab.end());		
-
-    // Evaluate expression here.
-    check_validity();
- }
- | LINE {
-     // Add the symbols found in the current expression to the
-     // global symbol table.
-     symtab.insert(exp_symtab.begin(), exp_symtab.end());
-     
-     // Evaluate expression here.
-     check_validity();
-   };
-
+LINES: LINES LINE
+| LINE;
 
 LINE:  S '.' {
     // cout<<"AST: "; print_AST($1); cout<<endl;
@@ -137,6 +122,13 @@ LINE:  S '.' {
         root = new ASTNode('&', $1, root);
     }
     clear_types();
+
+    // Add the symbols found in the current expression to the
+    // global symbol table.
+    symtab.insert(exp_symtab.begin(), exp_symtab.end());		
+
+    // Evaluate expression here.
+    check_validity();
 
  } ENDL
  | error ENDL { yyerrok; }
