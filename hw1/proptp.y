@@ -23,9 +23,8 @@ void yyerror(const char *s);
 
 
 typedef struct ASTNode {
-    int type; // yytokentype::...
+    int type; // yytokentype enum
     std::string id;
-    int val;
     ASTNode *left, *right;
 
     ASTNode(int _type, ASTNode *l = NULL, ASTNode *r = NULL)
