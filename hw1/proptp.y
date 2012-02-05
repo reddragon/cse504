@@ -127,7 +127,7 @@ LINE:  S '.' {
 		// of the tree would give us the value of
 		// g & f1 & f2 & .. & fn, which would tell us if
 		// the new expression is consistent or not.
-
+		
 		root = new ASTNode('&', $1, root);
     }
     clear_types();
