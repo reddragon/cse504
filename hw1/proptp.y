@@ -119,16 +119,16 @@ LINE:  S '.' {
     }
     else {
         // We chain the new expression with the
-		// old tree of expressions that we already have,
-		// using a conjuction operator. Thus, if there are
-		// multiple expressions, f1, f2, .. fn, that have
-		// been added to the tree uptil now, and the new 
-		// expression is g, then, the evaluation
-		// of the tree would give us the value of
-		// g & f1 & f2 & .. & fn, which would tell us if
-		// the new expression is consistent or not.
+        // old tree of expressions that we already have,
+        // using a conjuction operator. Thus, if there are
+        // multiple expressions, f1, f2, .. fn, that have
+        // been added to the tree uptil now, and the new 
+        // expression is g, then, the evaluation
+        // of the tree would give us the value of
+        // g & f1 & f2 & .. & fn, which would tell us if
+        // the new expression is consistent or not.
 		
-		root = new ASTNode('&', $1, root);
+        root = new ASTNode('&', $1, root);
     }
     clear_types();
 
@@ -328,7 +328,7 @@ evaluate(ASTNode *n) {
 static void
 check_validity() {
     // Check if the new expression is consistent with all
-	// expressions entered till now and print a
+    // expressions entered till now and print a
     // message accordingly.
 
     evaluate(root);
