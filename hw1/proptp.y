@@ -118,7 +118,17 @@ LINE:  S '.' {
         root = $1;
     }
     else {
-        root = new ASTNode('&', $1, root);
+        // We chain the new expression with the
+		// old tree of expressions that we already have,
+		// using a conjuction operator. Thus, if there are
+		// multiple expressions, f1, f2, .. fn, that have
+		// been added to the tree uptil now, and the new 
+		// expression is g, then, the evaluation
+		// of the tree would give us the value of
+		// g & f1 & f2 & .. & fn, which would tell us if
+		// the new expression is consistent or not.
+
+		root = new ASTNode('&', $1, root);
     }
     clear_types();
 
@@ -317,27 +327,15 @@ evaluate(ASTNode *n) {
 
 static void
 check_validity() {
-    // Check the validity of all expressions till now and print a
+    // Check if the new expression is consistent with all
+	// expressions entered till now and print a
     // message accordingly.
 
-    // fprintf(stderr, "%d expressions to check for validity.\n", nexpr);
-
-    // Printing the tables
-    /*
-    cout << "Symbol Table: " << endl;
-
-    for(std::map<std::string, bool>::iterator it = symtab.begin(); \
-	it != symtab.end(); it++)
-	cerr << it->first << endl;
-    */
     evaluate(root);
 }
 
 
 void yyerror(const char *s) {
-    // printf("ERROR: %s\n", s);
-    // return;
-		
     // Clear the expression symbol table, so that it is reusable
     exp_symtab.clear();
 
