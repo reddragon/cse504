@@ -20,11 +20,17 @@ void yyerror(const char *s);
 
 %union {
     char * id;
+    int val;
 }
 
 
 %error-verbose 
-%token <id> STRING;
+%token <id> STRING UNARY_OP RELATION_OP NAME READ SIMPLE_TYPE VOID
+%token <id> IF ELSE WHILE NEW THIS RETURN _NULL CLASS PRODUCT_OP SUM_OP
+%token <id> IDENTIFIER COMMENT_START ASSIGN_OP
+%token <val> NUMBER
+
+
 %token ENDL
 
 
@@ -44,7 +50,7 @@ yyerror(const char * s) {
 }
 
 int
-main() {
+_1main() {
     int ret = yyparse();
     return ret;
 }
