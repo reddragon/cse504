@@ -1,14 +1,5 @@
-class Example {
-                void main() {
-                    int x; int y;
-                    x = read();
-                    y = read();
-                    print(gcd(x, y));
-                }
-                int gcd(int a, int b) {
-                    if ( b == 0 )
-                        return a;
-                    else
-                        return gcd(b, a % b);
-                }
-            }
+class hello_world{
+public static void main() {
+Out.print("Hello World!");
+}
+}	

@@ -35,7 +35,7 @@ int lno = 0;
 
 (print)         { RETURN_STYPE(NAME); }
 (read)          { RETURN_STYPE(READ); }
-(int)           { RETURN_STYPE(SIMPLE_TYPE); }
+(int)|(float)|(boolean)   { RETURN_STYPE(SIMPLE_TYPE); }
 (void)          { RETURN_STYPE(VOID); }
 (if)            { RETURN_STYPE(IF); }
 (else)          { RETURN_STYPE(ELSE); }
@@ -45,15 +45,25 @@ int lno = 0;
 (return)        { RETURN_STYPE(RETURN); }
 (null)          { RETURN_STYPE(_NULL); }
 (class)         { RETURN_STYPE(CLASS); }
-
+(break)         { RETURN_STYPE(BREAK); }
+(continue)      { RETURN_STYPE(CONTINUE); }
+(do)            { RETURN_STYPE(DO); }
+(extends)       { RETURN_STYPE(EXTENDS); }
+(true)          { RETURN_STYPE(TRUE); }
+(false)         { RETURN_STYPE(FALSE); }
+(for)           { RETURN_STYPE(FOR); }
+(public)        { RETURN_STYPE(PUBLIC); }
+(private)       { RETURN_STYPE(PRIVATE); }
+(static)        { RETURN_STYPE(STATIC); }
+(super)         { RETURN_STYPE(SUPER); }
 [+\-!]          { RETURN_STYPE(UNARY_OP); }
 ([%*/])|(&&)    { RETURN_STYPE(PRODUCT_OP); }
 (>=)|(<=)|(==)|(!=)|(<)|(>) { RETURN_STYPE(RELATION_OP); }
 =               { RETURN_STYPE(ASSIGN_OP); }
 (\+)|(\-)|(\|\|) { RETURN_STYPE(SUM_OP); }
 [\;\(\){},\[\]\.]       { RETURN_CHAR; }
-[a-zA-Z][a-zA-Z0-9]*    { RETURN_STYPE(IDENTIFIER); }
-
+[a-zA-Z][a-zA-Z0-9_]*    { RETURN_STYPE(IDENTIFIER); }
+L?\"(\\.|[^\\"])*\"       { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
 [0-9]+          { RETURN_ITYPE(NUMBER); }
 
 %%
