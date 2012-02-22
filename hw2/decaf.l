@@ -21,14 +21,7 @@ int lno = 0;
 #define RETURN_CHAR return yytext[0];
 %}
 
-%x COMMENT
 %%
-"//"            { 
-  BEGIN(COMMENT);
-  return COMMENT_START;
-}
-<COMMENT>[^\n]+ ;
-<COMMENT>\n     { BEGIN(INITIAL); return ENDL; }
 
 [\ \t]          ;
 [\n]            { lno++; }
@@ -63,9 +56,11 @@ int lno = 0;
 (\+)|(\-)|(\|\|) { RETURN_STYPE(SUM_OP); }
 [\;\(\){},\[\]\.]       { RETURN_CHAR; }
 [a-zA-Z][a-zA-Z0-9_]*    { RETURN_STYPE(IDENTIFIER); }
-L?\"(\\.|[^\\"])*\"       { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
+\"((\\.)|[^\\"])*\"       { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
 [0-9]+          { RETURN_ITYPE(NUMBER); }
-
+\/\*((\*+[^\/\*])|[^\*])*\*+\/  { RETURN_STYPE(COMMENT); }
+\/\/[^\r\n]*    { RETURN_STYPE(COMMENT); }  
+[\+\-]?[0-9]*(\.[0-9]+)?([eE][\+\-]?[0-9]+)?  { RETURN_STYPE(FLOAT); }
 %%
 
 int
