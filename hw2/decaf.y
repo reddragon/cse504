@@ -20,17 +20,18 @@ void yyerror(const char *s);
 
 %union {
     char * id;
-    int val;
+    int ival;
+    double dval;
 }
 
 
 %error-verbose 
 %token <id> STRING UNARY_OP RELATION_OP NAME READ SIMPLE_TYPE VOID
 %token <id> IF ELSE WHILE NEW THIS RETURN _NULL CLASS PRODUCT_OP SUM_OP
-%token <id> IDENTIFIER C_COMMENT ASSIGN_OP BREAK CONTINUE DO EXTENDS
+%token <id> IDENTIFIER ASSIGN_OP BREAK CONTINUE DO EXTENDS
 %token <id> TRUE FALSE FOR PUBLIC PRIVATE STATIC SUPER STRING_LITERAL
-%token <id> CPP_COMMENT FLOAT
-%token <val> INT
+%token <dval> FLOAT
+%token <ival> INT
 %token ENDL
 
 
