@@ -16,12 +16,13 @@ class Temp extends Temp2 {
   }
   
   public void do_something() {
-    float a = 2.33e-24;
-    int tell_me = add(4,5,6);
-    int arr[24][][];
-    int answer = arr[3][2][3];
+    float ff;
+    ff;
+    //ff = 2.33e-45;
+    //int tell_me = add(4,5,6);
+    //int arr[24][][];
+    //int answer = arr[3][2][3];
 
-  
   }
 
   public void do_more() {

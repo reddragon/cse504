@@ -48,8 +48,8 @@ int lno = 1;
 [\+\-]          { RETURN_STYPE(SUM_OP); }
 [\+\-!]         { RETURN_STYPE(UNARY_OP); }
 ([%*/])|(&&)    { RETURN_STYPE(PRODUCT_OP); }
+=                                             { RETURN_CHAR; }
 (>=)|(<=)|(==)|(!=)|(<)|(>)                   { RETURN_STYPE(RELATION_OP); }
-=                                             { RETURN_STYPE(ASSIGN_OP); }
 (\+)|(\-)|(\|\|)                              { RETURN_STYPE(SUM_OP); }
 [\;\(\){},\[\]\.]                             { RETURN_CHAR; }
 [a-zA-Z][a-zA-Z0-9_]*                         { RETURN_STYPE(IDENTIFIER); }
