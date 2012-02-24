@@ -45,11 +45,9 @@ int lno = 1;
 (private)       { RETURN_STYPE(PRIVATE); }
 (static)        { RETURN_STYPE(STATIC); }
 (super)         { RETURN_STYPE(SUPER); }
-[\+\-]          { RETURN_STYPE(SUM_OP); }
-[\+\-!]         { RETURN_STYPE(UNARY_OP); }
-([%*/])|(&&)    { RETURN_STYPE(PRODUCT_OP); }
-=                                             { RETURN_CHAR; }
-(>=)|(<=)|(==)|(!=)|(<)|(>)                   { RETURN_STYPE(RELATION_OP); }
+[+\-!%=]        { RETURN_CHAR; }
+[*/]            { RETURN_STYPE(PRODUCT_OP); }
+(>=)|(<=)|(==)|(!=)|(<)|(>)|(&&)              { RETURN_STYPE(RELATION_OP); }
 (\+)|(\-)|(\|\|)                              { RETURN_STYPE(SUM_OP); }
 [\;\(\){},\[\]\.]                             { RETURN_CHAR; }
 [a-zA-Z][a-zA-Z0-9_]*                         { RETURN_STYPE(IDENTIFIER); }
