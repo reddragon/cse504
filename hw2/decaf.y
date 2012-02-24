@@ -124,7 +124,7 @@ statement: IF '(' expr ')' statement else
            { cout << "If-Else block on line number " << lno << endl; }
          | WHILE '(' expr ')' statement
            { cout << "While statement on line number " << lno << endl; }
-         | FOR '(' statement_exprs ';' expr ';' statement_exprs ')' statement
+         | FOR '(' optional_statement_expr ';' expr ';' optional_statement_expr ')' statement
            { cout << "For statement on line number " << lno << endl; }
          | RETURN optional_expr
            { cout << "Return statement on line number " << lno << endl; }
@@ -142,15 +142,15 @@ else: ELSE statement
       |
 ;
 
-statement_exprs: statement_exprs statement_expr
-               | statement_expr
+optional_statement_expr:  statement_expr
+                       |
 ;
 
 optional_expr: expr
              | 
 ;
 
-statement_expr:
+statement_expr: TRUE
 ;
 
 expr: primary
