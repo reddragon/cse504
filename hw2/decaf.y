@@ -31,18 +31,120 @@ void yyerror(const char *s);
 %token <id> TRUE FALSE FOR PUBLIC PRIVATE STATIC SUPER STRING_LITERAL
 %token <id> COMMENT FLOAT
 %token <val> NUMBER
-
-
 %token ENDL
 
 
 %%
 
-LINES: 	LINES ENDL LINE
-	| LINE
+program: class_decls
+;
 
-LINE:	STRING
-	| ENDL
+class_decls: class_decls class_decl
+           |
+;
+
+class_decl: CLASS IDENTIFIER optionally_extends '{' class_body_contents '}' 
+              { cout << "New class " << $2 << " defined " << endl; }
+;
+
+optionally_extends: EXTENDS IDENTIFIER
+                    { cout << "This class extends the class " << $2 << endl; }
+                  |
+;
+
+class_body_contents: class_body_contents class_body_decl
+                   | class_body_decl
+;
+
+class_body_decl: field_decl
+               | method_decl
+;
+
+field_decl: modifier var_decl
+;
+
+modifier: access static
+;
+
+access: PUBLIC
+       | PRIVATE
+       |
+;
+
+static: STATIC
+       | 
+;
+
+var_decl: type variables ';'
+;
+
+type: SIMPLE_TYPE
+    | IDENTIFIER
+;
+
+variables:  variable
+         |  variable ',' variable
+;
+
+variable: IDENTIFIER array_dimensions 
+          { cout << "New variable " << $1 << endl; }
+;
+
+array_dimensions: array_dimensions '[' ']'
+                |
+;
+
+method_decl: modifier type IDENTIFIER '(' formals ')' block
+             { cout << "New function " << $3 << endl; }
+           | modifier VOID IDENTIFIER '(' formals ')' block
+             { cout << "New function " << $3 << endl; }
+;
+
+formals: formal_param
+       | formals ',' formal_param
+       | 
+;
+
+formal_param: type variable
+;
+
+block: '{' statements '}'
+;
+
+statements: statements statement
+          |
+;
+
+statement: IF '(' expr ')' statement else
+         | WHILE '(' expr ')' statement
+         | FOR '(' statement_exprs ';' expr ';' statement_exprs ')' statement
+         | RETURN optional_expr
+         | statement_expr
+         | BREAK ';'
+         | CONTINUE ';'
+         | block
+         | var_decl
+         | ';'
+;
+
+else: ELSE statement
+      |
+;
+
+statement_exprs: statement_exprs statement_expr
+               | statement_expr
+;
+
+optional_expr: expr
+             | 
+;
+
+statement_expr:
+;
+
+expr: TRUE
+    | FALSE
+;
 
 %%
 
@@ -52,7 +154,7 @@ yyerror(const char * s) {
 }
 
 int
-_1main() {
+main() {
     int ret = yyparse();
     return ret;
 }

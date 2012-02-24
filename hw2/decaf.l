@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int lno = 0;
+int lno = 1;
 #define YY_DECL extern "C" int yylex()
 
 #define RETURN_STYPE(TYPE) { \
@@ -25,7 +25,6 @@ int lno = 0;
 
 [\ \t]          ;
 [\n]            { lno++; }
-
 (print)         { RETURN_STYPE(NAME); }
 (read)          { RETURN_STYPE(READ); }
 (int)|(float)|(boolean)   { RETURN_STYPE(SIMPLE_TYPE); }
@@ -51,18 +50,18 @@ int lno = 0;
 (super)         { RETURN_STYPE(SUPER); }
 [+\-!]          { RETURN_STYPE(UNARY_OP); }
 ([%*/])|(&&)    { RETURN_STYPE(PRODUCT_OP); }
-(>=)|(<=)|(==)|(!=)|(<)|(>) { RETURN_STYPE(RELATION_OP); }
-=               { RETURN_STYPE(ASSIGN_OP); }
-(\+)|(\-)|(\|\|) { RETURN_STYPE(SUM_OP); }
-[\;\(\){},\[\]\.]       { RETURN_CHAR; }
-[a-zA-Z][a-zA-Z0-9_]*    { RETURN_STYPE(IDENTIFIER); }
-\"((\\.)|[^\\"])*\"       { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
-[0-9]+          { RETURN_ITYPE(NUMBER); }
-\/\*((\*+[^\/\*])|[^\*])*\*+\/  { RETURN_STYPE(COMMENT); }
-\/\/[^\r\n]*    { RETURN_STYPE(COMMENT); }  
+(>=)|(<=)|(==)|(!=)|(<)|(>)                   { RETURN_STYPE(RELATION_OP); }
+=                                             { RETURN_STYPE(ASSIGN_OP); }
+(\+)|(\-)|(\|\|)                              { RETURN_STYPE(SUM_OP); }
+[\;\(\){},\[\]\.]                             { RETURN_CHAR; }
+[a-zA-Z][a-zA-Z0-9_]*                         { RETURN_STYPE(IDENTIFIER); }
+\"((\\.)|[^\\"])*\"                           { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
+[0-9]+                                        { RETURN_ITYPE(NUMBER); }
+\/\*((\*+[^\/\*])|[^\*])*\*+\/                { RETURN_STYPE(COMMENT); }
+\/\/[^\r\n]*                                  { RETURN_STYPE(COMMENT); }  
 [\+\-]?[0-9]*(\.[0-9]+)?([eE][\+\-]?[0-9]+)?  { RETURN_STYPE(FLOAT); }
 %%
-
+/*
 int
 main() {
   int token = yylex();
@@ -71,4 +70,4 @@ main() {
     token = yylex();
   }
   return 0;
-}
+} */
