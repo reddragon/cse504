@@ -2,9 +2,14 @@ class Temp extends Temp2 {
   public int a;
 
   private int do_something_else() {
+    return true;
   }
 
   float keep_doing(int a) {
+    while(false) {
+      break;
+      continue;
+    }
   }
 
   double another_test(int a, float b, double d[]) {

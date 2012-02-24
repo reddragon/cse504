@@ -30,7 +30,7 @@ void yyerror(const char *s);
 %token <id> IDENTIFIER COMMENT_START ASSIGN_OP BREAK CONTINUE DO EXTENDS
 %token <id> TRUE FALSE FOR PUBLIC PRIVATE STATIC SUPER STRING_LITERAL
 %token <id> COMMENT FLOAT
-%token <val> NUMBER
+%token <val> INT
 %token ENDL
 
 
@@ -116,12 +116,18 @@ statements: statements statement
 ;
 
 statement: IF '(' expr ')' statement else
+           { cout << "If-Else block on line number " << lno << endl; }
          | WHILE '(' expr ')' statement
+           { cout << "While statement on line number " << lno << endl; }
          | FOR '(' statement_exprs ';' expr ';' statement_exprs ')' statement
+           { cout << "For statement on line number " << lno << endl; }
          | RETURN optional_expr
+           { cout << "Return statement on line number " << lno << endl; }
          | statement_expr
          | BREAK ';'
+           { cout << "Break statement on line number " << lno << endl; }
          | CONTINUE ';'
+           { cout << "Continue statement on line number " << lno << endl; }
          | block
          | var_decl
          | ';'
@@ -142,9 +148,55 @@ optional_expr: expr
 statement_expr:
 ;
 
-expr: TRUE
+expr: primary
+    | TRUE
     | FALSE
 ;
+
+literal: INT
+         { cout << "Integer literal encountered: " << $1 << " on line number " << lno << endl; }
+       | FLOAT
+         { cout << "Float literal encounterd: " << $1 << " on line number " << lno << endl; }
+       | _NULL
+         { cout << "NULL encountered: " << $1 << " on line number " << lno << endl; }
+       | TRUE
+         { cout << "true encountered: " << $1 << " on line number " << lno << endl; }
+       | FALSE
+         { cout << "false encountered: " << $1 << " on line number " << lno << endl; }
+;
+
+primary:  literal
+       |  THIS
+       |  SUPER
+       |  '(' expr ')'
+       |  NEW IDENTIFIER '(' optional_arguments ')'
+       |  lhs
+       |  method_invocation
+;
+
+optional_arguments: arguments
+                  |
+;
+
+arguments:  expr
+         |  arguments ',' expr
+;
+
+lhs:  field_access
+   |  array_access
+;
+
+field_access: primary '.' IDENTIFIER
+            | IDENTIFIER
+;
+
+array_access: primary '[' expr ']'
+;
+
+method_invocation: field_access '(' optional_arguments ')'
+;
+
+
 
 %%
 

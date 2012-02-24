@@ -56,7 +56,7 @@ int lno = 1;
 [\;\(\){},\[\]\.]                             { RETURN_CHAR; }
 [a-zA-Z][a-zA-Z0-9_]*                         { RETURN_STYPE(IDENTIFIER); }
 \"((\\.)|[^\\"])*\"                           { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
-[0-9]+                                        { RETURN_ITYPE(NUMBER); }
+[0-9]+                                        { RETURN_ITYPE(INT); }
 \/\*((\*+[^\/\*])|[^\*])*\*+\/                { RETURN_STYPE(COMMENT); }
 \/\/[^\r\n]*                                  { RETURN_STYPE(COMMENT); }  
 [\+\-]?[0-9]*(\.[0-9]+)?([eE][\+\-]?[0-9]+)?  { RETURN_STYPE(FLOAT); }
