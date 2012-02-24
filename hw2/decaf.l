@@ -25,9 +25,6 @@ int lno = 1;
 
 [\ \t]          ;
 [\n]            { lno++; }
-(print)         { RETURN_STYPE(NAME); }
-(read)          { RETURN_STYPE(READ); }
-(int)|(float)|(boolean)   { RETURN_STYPE(SIMPLE_TYPE); }
 (void)          { RETURN_STYPE(VOID); }
 (if)            { RETURN_STYPE(IF); }
 (else)          { RETURN_STYPE(ELSE); }
