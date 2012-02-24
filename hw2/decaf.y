@@ -155,6 +155,7 @@ statement_expr: TRUE
 
 expr: primary
     | assign
+    | new_array
 ;
 
 literal: INT
@@ -206,6 +207,15 @@ assign: lhs '=' expr
         | INCDEC lhs
 ;
 
+new_array: NEW type array_dimensions_exprs array_dimensions
+;
+
+array_dimensions_exprs: array_dimensions_exprs array_dimensions_expr
+                        | array_dimensions_expr
+;
+
+array_dimensions_expr: '[' expr ']'
+;
 
 %%
 

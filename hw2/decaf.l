@@ -48,7 +48,8 @@ int lno = 1;
 (private)       { RETURN_STYPE(PRIVATE); }
 (static)        { RETURN_STYPE(STATIC); }
 (super)         { RETURN_STYPE(SUPER); }
-[+\-!]          { RETURN_STYPE(UNARY_OP); }
+[\+\-]          { RETURN_STYPE(SUM_OP); }
+[\+\-!]         { RETURN_STYPE(UNARY_OP); }
 ([%*/])|(&&)    { RETURN_STYPE(PRODUCT_OP); }
 (>=)|(<=)|(==)|(!=)|(<)|(>)                   { RETURN_STYPE(RELATION_OP); }
 =                                             { RETURN_STYPE(ASSIGN_OP); }
