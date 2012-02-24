@@ -154,8 +154,7 @@ statement_expr: TRUE
 ;
 
 expr: primary
-    | TRUE
-    | FALSE
+    | assign
 ;
 
 literal: INT
