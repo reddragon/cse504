@@ -59,6 +59,7 @@ class_body_contents: class_body_contents class_body_decl
 
 class_body_decl: field_decl
                | method_decl
+               | constructor_decl
 ;
 
 field_decl: modifier var_decl
@@ -99,6 +100,9 @@ method_decl: modifier type IDENTIFIER '(' formals ')' block
              { cout << "New function " << $3 << endl; }
            | modifier VOID IDENTIFIER '(' formals ')' block
              { cout << "New function " << $3 << endl; }
+;
+
+constructor_decl: modifier IDENTIFIER '(' formals ')' block
 ;
 
 formals: formal_param
