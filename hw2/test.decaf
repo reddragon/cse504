@@ -22,8 +22,6 @@ class Temp extends Temp2 {
     if(true) 
     { if(true) { } else { } } else { } 
 
-    
-    for(true;true;) 
-    { }
+    for(true;true;true) { } 
   }
 }
