@@ -194,6 +194,7 @@ array_access: primary '[' expr ']'
 ;
 
 method_invocation: field_access '(' optional_arguments ')'
+                   { cout << "Invoked a method on line number " << lno << endl; }
 ;
 
 
