@@ -26,7 +26,7 @@ void yyerror(const char *s);
 
 
 %error-verbose 
-%token <id> STRING UNARY_OP BOOL_OP NAME SIMPLE_TYPE VOID
+%token <id> STRING UNARY_OP BOOL_OP NAME SIMPLE_TYPE VOID REL_OP
 %token <id> IF ELSE WHILE NEW THIS RETURN _NULL CLASS PRODUCT_OP
 %token <id> IDENTIFIER BREAK CONTINUE DO EXTENDS INCDEC
 %token <id> TRUE FALSE FOR PUBLIC PRIVATE STATIC SUPER STRING_LITERAL
@@ -35,9 +35,9 @@ void yyerror(const char *s);
 %token ENDL
 
 %right '='
-%left BOOL_OP
-%left '+' '-'
-%left PRODUCT_OP
+ // %left BOOL_OP
+ // %left '+' '-'
+ // %left PRODUCT_OP
 %left UMINUS
 
 
@@ -94,12 +94,14 @@ variables:  variable
          |  variable ',' variable
 ;
 
-variable: IDENTIFIER array_dimensions 
+variable: IDENTIFIER array_dimensions
+          { cout << "New array variable " << $1 << endl; }
+        | IDENTIFIER
           { cout << "New variable " << $1 << endl; }
 ;
 
 array_dimensions: array_dimensions '[' ']'
-                |
+                | '[' ']'
 ;
 
 method_decl: modifier type IDENTIFIER '(' formals ')' block
@@ -132,8 +134,11 @@ statement: IF '(' expr ')' statement else
            { cout << "While statement on line number " << lno << endl; }
          | FOR '(' optional_statement_expr ';' expr ';' optional_statement_expr ')' statement
            { cout << "For statement on line number " << lno << endl; }
-         | RETURN optional_expr ';'
+         | FOR '(' optional_statement_expr ';' ';' optional_statement_expr ')' statement
+           { cout << "For statement on line number " << lno << endl; }
+         | RETURN expr ';'
            { cout << "Return statement on line number " << lno << endl; }
+         | RETURN ';'
          | statement_expr ';'
          | BREAK ';'
            { cout << "Break statement on line number " << lno << endl; }
@@ -152,21 +157,30 @@ optional_statement_expr:  statement_expr
                        |
 ;
 
-optional_expr: expr
-             | 
-;
-
 statement_expr: assign
               | method_invocation
 ;
 
-expr: primary
-    | assign
-    | new_array
-    | expr sum_op expr
-    | expr product_op expr
-    | expr bool_op expr
-      //    | unary_op expr %prec UMINUS
+expr: expr rel_op bool_expr
+    | bool_expr
+;
+
+bool_expr: bool_expr bool_op sum_expr
+         | sum_expr
+;
+
+sum_expr: sum_expr sum_op product_expr
+        | product_expr
+;
+
+product_expr: product_expr product_op unary_expr
+            | unary_expr
+;
+
+unary_expr: unary_op expr %prec UMINUS
+          | primary
+          | assign
+          | new_array
 ;
 
 literal: INT
@@ -219,6 +233,7 @@ assign: lhs '=' expr
 ;
 
 new_array: NEW type array_dimensions_exprs array_dimensions
+         | NEW type array_dimensions_exprs
 ;
 
 array_dimensions_exprs: array_dimensions_exprs array_dimensions_expr
@@ -233,6 +248,9 @@ sum_op: '+'
 ;
 
 product_op: PRODUCT_OP
+;
+
+rel_op: REL_OP
 ;
 
 bool_op: BOOL_OP
