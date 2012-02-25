@@ -34,6 +34,7 @@ void yyerror(const char *s);
 %token <ival> INT
 %token ENDL
 
+%right '='
 %left BOOL_OP
 %left '+' '-'
 %left PRODUCT_OP
@@ -165,7 +166,7 @@ expr: primary
     | expr sum_op expr
     | expr product_op expr
     | expr bool_op expr
-    | unary_op expr %prec UMINUS
+      //    | unary_op expr %prec UMINUS
 ;
 
 literal: INT
