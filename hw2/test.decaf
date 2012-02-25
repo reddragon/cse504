@@ -32,7 +32,8 @@ class Temp extends Temp2 {
     if(true) 
     { if(true) { } else { } } else { } 
     
-    //int i = 2;
+    int i;
+    i = 2;
     for(i = 3; i<100;i=i+10) { } 
   }
 }
