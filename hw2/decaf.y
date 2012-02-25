@@ -126,7 +126,7 @@ statement: IF '(' expr ')' statement else
            { cout << "While statement on line number " << lno << endl; }
          | FOR '(' optional_statement_expr ';' expr ';' optional_statement_expr ')' statement
            { cout << "For statement on line number " << lno << endl; }
-         | RETURN optional_expr
+         | RETURN optional_expr ';'
            { cout << "Return statement on line number " << lno << endl; }
          | statement_expr
          | BREAK ';'
