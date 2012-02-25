@@ -26,20 +26,20 @@ void yyerror(const char *s);
 
 
 %error-verbose 
-%token <id> STRING UNARY_OP BOOL_OP NAME SIMPLE_TYPE VOID REL_OP
-%token <id> IF ELSE WHILE NEW THIS RETURN _NULL CLASS PRODUCT_OP
+%token <id> STRING NAME SIMPLE_TYPE VOID
+%token <id> IF ELSE WHILE NEW THIS RETURN _NULL CLASS
 %token <id> IDENTIFIER BREAK CONTINUE DO EXTENDS INCDEC
 %token <id> TRUE FALSE FOR PUBLIC PRIVATE STATIC SUPER STRING_LITERAL
 %token <dval> FLOAT
 %token <ival> INT
 %token ENDL
 
-%right '='
- // %left BOOL_OP
- // %left '+' '-'
- // %left PRODUCT_OP
-%left UMINUS
-
+%nonassoc REL_OP "<=" ">=" "!=" "==" '<' '>'
+%right '=' EQ_OP
+%left BOOL_OP "&&" "||"
+%left '+' '-' SUM_OP
+%left PRODUCT_OP '*' '/'
+%left UNARY_OP '!'
 
 %%
 
@@ -104,29 +104,41 @@ array_dimensions: array_dimensions '[' ']'
                 | '[' ']'
 ;
 
-method_decl: modifier type IDENTIFIER '(' formals ')' block
+method_decl: modifier type IDENTIFIER paren_formals block
              { cout << "New function " << $3 << endl; }
-           | modifier VOID IDENTIFIER '(' formals ')' block
+           | modifier VOID IDENTIFIER paren_formals block
              { cout << "New function " << $3 << endl; }
 ;
 
-constructor_decl: modifier IDENTIFIER '(' formals ')' block
+constructor_decl: modifier IDENTIFIER paren_formals block
 ;
 
+paren_formals: '(' ')' 
+             | '(' required_formals ')'
+;
+
+required_formals: required_formals ',' formal_param
+       | formal_param
+
+/*
 formals: formal_param
        | formals ',' formal_param
        | 
 ;
+*/
 
 formal_param: type variable
 ;
 
-block: '{' statements '}'
+block: '{' statement '}'
+     | '{' '}'
 ;
 
+/*
 statements: statements statement
           |
 ;
+*/
 
 statement: IF '(' expr ')' statement else
            { cout << "If-Else block on line number " << lno << endl; }
@@ -161,23 +173,35 @@ statement_expr: assign
               | method_invocation
 ;
 
-expr: expr rel_op bool_expr
+/*
+expr: primary
+    | assign
+    | new_array
+    | expr sum_op expr 
+    | expr product_op expr
+    | expr rel_op expr
+    | expr bool_op expr
+    | unary_op expr %prec UNARY_OP
+;
+*/
+
+expr: expr rel_op bool_expr %prec REL_OP
     | bool_expr
 ;
 
-bool_expr: bool_expr bool_op sum_expr
+bool_expr: bool_expr bool_op sum_expr %prec BOOL_OP
          | sum_expr
 ;
 
-sum_expr: sum_expr sum_op product_expr
+sum_expr: sum_expr sum_op product_expr %prec SUM_OP
         | product_expr
 ;
 
-product_expr: product_expr product_op unary_expr
+product_expr: product_expr product_op unary_expr %prec PRODUCT_OP
             | unary_expr
 ;
 
-unary_expr: unary_op expr %prec UMINUS
+unary_expr: unary_op expr %prec UNARY_OP
           | primary
           | assign
           | new_array
@@ -227,7 +251,7 @@ method_invocation: field_access '(' optional_arguments ')'
                    { cout << "Invoked a method on line number " << lno << endl; }
 ;
 
-assign: lhs '=' expr
+assign: lhs '=' expr %prec EQ_OP
         | lhs INCDEC
         | INCDEC lhs
 ;
