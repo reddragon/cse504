@@ -227,6 +227,8 @@ literal: INT
          { cout << "true encountered: " << $1 << " on line number " << lno << endl; }
        | FALSE
          { cout << "false encountered: " << $1 << " on line number " << lno << endl; }
+       | STRING_LITERAL
+         { cout << "string encountered: " << $1 << " on line number " << lno << endl; }
 ;
 
 primary:  literal
