@@ -47,8 +47,7 @@ int lno = 1;
 (super)         { RETURN_STYPE(SUPER); }
 [+\-!%=]        { RETURN_CHAR; }
 [*/]            { RETURN_STYPE(PRODUCT_OP); }
-(>=)|(<=)|(==)|(!=)|(<)|(>)|(&&)              { RETURN_STYPE(RELATION_OP); }
-(\+)|(\-)|(\|\|)                              { RETURN_STYPE(SUM_OP); }
+(>=)|(<=)|(==)|(!=)|(<)|(>)|(&&)|(\|\|)       { RETURN_STYPE(BOOL_OP); }
 [\;\(\){},\[\]\.]                             { RETURN_CHAR; }
 [a-zA-Z][a-zA-Z0-9_]*                         { RETURN_STYPE(IDENTIFIER); }
 \"((\\.)|[^\\"])*\"                           { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
