@@ -150,7 +150,8 @@ optional_expr: expr
              | 
 ;
 
-statement_expr: TRUE
+statement_expr: assign
+              | method_invocation
 ;
 
 expr: primary
