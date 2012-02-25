@@ -13,17 +13,17 @@ class hello_world{
         // This is a comment()
         
         // /* This should be a single line comment */
-        
+
         //"This should still be a comment"
         /* hello\nWorld\n hi * * there\n \n ***//**hello**//**hel**lo***/
         
-        float f1 = -0.16;
-        float f1 = 2.16;
-        float f1 = +2.16;
-        float f1 = .16;
-        float f1 = +1e30;
-        float f1 = -2.34e-16;
-        float f1 = +3.44e+17;
-        float f1 = 1e19;
+        float f1; f1 = -0.16;
+        float f1; f1 = 2.16;
+        float f1; f1 = +2.16;
+        float f1; f1 = .16;
+        float f1; f1 = +1e30;
+        float f1; f1 = -2.34e-16;
+        float f1; f1 = +3.44e+17;
+        float f1; f1 = 1e19;
     }
 }
