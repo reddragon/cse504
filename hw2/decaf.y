@@ -13,6 +13,7 @@ extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" int lno;
 extern "C" char *yytext;
+extern "C" int yylineno;
 
 void yyerror(const char *s);
 
@@ -148,21 +149,21 @@ statements: statements statement
 */
 
 statement: IF '(' expr ')' statement else
-           { cout << "If-Else block on line number " << lno << endl; }
+           { cout << "If-Else block on line number " << yylineno << endl; }
          | WHILE '(' expr ')' statement
-           { cout << "While statement on line number " << lno << endl; }
+           { cout << "While statement on line number " << yylineno << endl; }
          | FOR '(' optional_statement_expr ';' expr ';' optional_statement_expr ')' statement
-           { cout << "For statement on line number " << lno << endl; }
+           { cout << "For statement on line number " << yylineno << endl; }
          | FOR '(' optional_statement_expr ';' ';' optional_statement_expr ')' statement
-           { cout << "For statement on line number " << lno << endl; }
+           { cout << "For statement on line number " << yylineno << endl; }
          | RETURN expr ';'
-           { cout << "Return statement on line number " << lno << endl; }
+           { cout << "Return statement on line number " << yylineno << endl; }
          | RETURN ';'
          | statement_expr ';'
          | BREAK ';'
-           { cout << "Break statement on line number " << lno << endl; }
+           { cout << "Break statement on line number " << yylineno << endl; }
          | CONTINUE ';'
-           { cout << "Continue statement on line number " << lno << endl; }
+           { cout << "Continue statement on line number " << yylineno << endl; }
          | block
          | var_decl
          | ';'
@@ -218,17 +219,17 @@ unary_expr: unary_op expr %prec UNARY_OP
 ;
 
 literal: INT
-         { cout << "Integer literal encountered: " << $1 << " on line number " << lno << endl; }
+         { cout << "Integer literal encountered: " << $1 << " on line number " << yylineno << endl; }
        | FLOAT
-         { cout << "Float literal encounterd: " << $1 << " on line number " << lno << endl; }
+         { cout << "Float literal encounterd: " << $1 << " on line number " << yylineno << endl; }
        | _NULL
-         { cout << "NULL encountered: " << $1 << " on line number " << lno << endl; }
+         { cout << "NULL encountered: " << $1 << " on line number " << yylineno << endl; }
        | TRUE
-         { cout << "true encountered: " << $1 << " on line number " << lno << endl; }
+         { cout << "true encountered: " << $1 << " on line number " << yylineno << endl; }
        | FALSE
-         { cout << "false encountered: " << $1 << " on line number " << lno << endl; }
+         { cout << "false encountered: " << $1 << " on line number " << yylineno << endl; }
        | STRING_LITERAL
-         { cout << "string encountered: " << $1 << " on line number " << lno << endl; }
+         { cout << "string encountered: " << $1 << " on line number " << yylineno << endl; }
 ;
 
 primary:  literal
@@ -260,7 +261,7 @@ array_access: primary '[' expr ']'
 ;
 
 method_invocation: field_access '(' optional_arguments ')'
-                   { cout << "Invoked a method on line number " << lno << endl; }
+                   { cout << "Invoked a method on line number " << yylineno << endl; }
 ;
 
 assign: lhs '=' expr %prec EQ_OP
@@ -295,7 +296,7 @@ unary_op: '+' %prec UNARY_OP
 
 void 
 yyerror(const char * s) {
-    fprintf(stderr, "Error on line number %d: %s\n", lno, s);
+    fprintf(stderr, "Error on line number %d: %s\n", yylineno, s);
 }
 
 int

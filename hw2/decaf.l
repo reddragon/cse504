@@ -4,7 +4,6 @@
 
 using namespace std;
 
-int lno = 1;
 #define YY_DECL extern "C" int yylex()
 
 #define RETURN_STYPE(TYPE) { \
@@ -28,10 +27,12 @@ int lno = 1;
 #define RETURN_CHAR return yytext[0];
 %}
 
+%option yylineno
+
 %%
 
 [\ \t]          ;
-[\n]            { lno++; }
+[\n]            { };
 (void)          { RETURN_STYPE(VOID); }
 (if)            { RETURN_STYPE(IF); }
 (else)          { RETURN_STYPE(ELSE); }
