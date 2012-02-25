@@ -34,6 +34,11 @@ void yyerror(const char *s);
 %token <ival> INT
 %token ENDL
 
+%left BOOL_OP
+%left '+' '-'
+%left PRODUCT_OP
+%left UMINUS
+
 
 %%
 
@@ -157,9 +162,10 @@ statement_expr: assign
 expr: primary
     | assign
     | new_array
-    | expr arith_op expr
+    | expr sum_op expr
+    | expr product_op expr
     | expr bool_op expr
-    | unary_op expr
+    | unary_op expr %prec UMINUS
 ;
 
 literal: INT
@@ -221,9 +227,11 @@ array_dimensions_exprs: array_dimensions_exprs array_dimensions_expr
 array_dimensions_expr: '[' expr ']'
 ;
 
-arith_op: PRODUCT_OP 
-          | '+' 
-          | '-'
+sum_op: '+'
+      | '-'
+;
+
+product_op: PRODUCT_OP
 ;
 
 bool_op: BOOL_OP
