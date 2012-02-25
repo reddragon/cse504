@@ -26,8 +26,8 @@ void yyerror(const char *s);
 
 
 %error-verbose 
-%token <id> STRING UNARY_OP RELATION_OP NAME SIMPLE_TYPE VOID
-%token <id> IF ELSE WHILE NEW THIS RETURN _NULL CLASS PRODUCT_OP SUM_OP
+%token <id> STRING UNARY_OP BOOL_OP NAME SIMPLE_TYPE VOID
+%token <id> IF ELSE WHILE NEW THIS RETURN _NULL CLASS PRODUCT_OP
 %token <id> IDENTIFIER BREAK CONTINUE DO EXTENDS INCDEC
 %token <id> TRUE FALSE FOR PUBLIC PRIVATE STATIC SUPER STRING_LITERAL
 %token <dval> FLOAT
@@ -157,6 +157,9 @@ statement_expr: assign
 expr: primary
     | assign
     | new_array
+    | expr arith_op expr
+    | expr bool_op expr
+    | unary_op expr
 ;
 
 literal: INT
@@ -216,6 +219,19 @@ array_dimensions_exprs: array_dimensions_exprs array_dimensions_expr
 ;
 
 array_dimensions_expr: '[' expr ']'
+;
+
+arith_op: PRODUCT_OP 
+          | '+' 
+          | '-'
+;
+
+bool_op: BOOL_OP
+;
+
+unary_op: '+' 
+        | '-' 
+        | '!'
 ;
 
 %%
