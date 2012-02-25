@@ -93,8 +93,8 @@ type: SIMPLE_TYPE
     | IDENTIFIER
 ;
 
-variables:  variable
-         |  variable ',' variable
+variables: variables ',' variable
+         | variable
 ;
 
 variable: IDENTIFIER array_dimensions
