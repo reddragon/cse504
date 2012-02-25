@@ -17,6 +17,12 @@ int lno = 1;
   return TYPE; \
 }
 
+#define RETURN_DTYPE(TYPE) { \
+  yylval.dval = atof(yytext); \
+  return TYPE; \
+}
+
+
 #define RETURN_CTYPE(TYPE) return TYPE;
 #define RETURN_CHAR return yytext[0];
 %}
@@ -54,7 +60,7 @@ int lno = 1;
 [0-9]+                                        { RETURN_ITYPE(INT); }
 \/\*((\*+[^\/\*])|[^\*])*\*+\/                ;
 \/\/[^\r\n]*                                  ;
-[\+\-]?[0-9]*(\.[0-9]+)?([eE][\+\-]?[0-9]+)?  { RETURN_STYPE(FLOAT); }
+[\+\-]?[0-9]*(\.[0-9]+)?([eE][\+\-]?[0-9]+)?  { RETURN_DTYPE(FLOAT); }
 (\+\+)|(\-\-)                                 { RETURN_STYPE(INCDEC); }
 %%
 /*
