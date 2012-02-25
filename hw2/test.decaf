@@ -18,8 +18,12 @@ class Temp extends Temp2 {
   public void do_something() {
     float ff;
     ff = 2.33e-45;
-    int tell_me = add(4,5,6);
-    //int arr[24][][];
+    add(2,3,4);
+    int tell_me;
+    tell_me = add(4,5,6);
+    int arr[][];
+    //arr = new int[24][];
+    // [][];
     //int answer = arr[3][2][3];
 
   }
@@ -29,6 +33,6 @@ class Temp extends Temp2 {
     { if(true) { } else { } } else { } 
     
     //int i = 2;
-    //for(i = 3; i<100;i+=10) { } 
+    for(i = 3; i<100;i=i+10) { } 
   }
 }

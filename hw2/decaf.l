@@ -19,6 +19,7 @@ int lno = 1;
 
 #define RETURN_DTYPE(TYPE) { \
   yylval.dval = atof(yytext); \
+  cout << yytext << " is a float " << endl; \
   return TYPE; \
 }
 
@@ -53,15 +54,16 @@ int lno = 1;
 (super)         { RETURN_STYPE(SUPER); }
 [+\-!%=]        { RETURN_CHAR; }
 [*/]            { RETURN_STYPE(PRODUCT_OP); }
-(>=)|(<=)|(==)|(!=)|(<)|(>)|(&&)|(\|\|)       { RETURN_STYPE(BOOL_OP); }
-[\;\(\){},\[\]\.]                             { RETURN_CHAR; }
-[a-zA-Z][a-zA-Z0-9_]*                         { RETURN_STYPE(IDENTIFIER); }
-\"((\\.)|[^\\"])*\"                           { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
-[0-9]+                                        { RETURN_ITYPE(INT); }
-\/\*((\*+[^\/\*])|[^\*])*\*+\/                ;
-\/\/[^\r\n]*                                  ;
-[\+\-]?[0-9]*(\.[0-9]+)?([eE][\+\-]?[0-9]+)?  { RETURN_DTYPE(FLOAT); }
-(\+\+)|(\-\-)                                 { RETURN_STYPE(INCDEC); }
+(>=)|(<=)|(==)|(!=)|(<)|(>)|(&&)|(\|\|)         { RETURN_STYPE(BOOL_OP); }
+[\;\(\){},\[\]\.]                               { RETURN_CHAR; }
+[a-zA-Z][a-zA-Z0-9_]*                           { RETURN_STYPE(IDENTIFIER); }
+\"((\\.)|[^\\"])*\"                             { RETURN_STYPE(STRING_LITERAL); /* TODO: Why this works? */ }
+[0-9]+                                          { RETURN_ITYPE(INT); }
+\/\*((\*+[^\/\*])|[^\*])*\*+\/                  ;
+\/\/[^\r\n]*                                    ;
+[0-9]*(\.)([0-9]+)?([eE][\+\-]?[0-9]+)?         { RETURN_DTYPE(FLOAT); }
+[0-9]*([eE][\+\-]?[0-9]+)?                      { RETURN_DTYPE(FLOAT); }
+(\+\+)|(\-\-)                                   { RETURN_STYPE(INCDEC); }
 %%
 /*
 int
