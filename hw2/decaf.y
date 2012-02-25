@@ -280,9 +280,9 @@ rel_op: REL_OP
 bool_op: BOOL_OP
 ;
 
-unary_op: '+' 
-        | '-' 
-        | '!'
+unary_op: '+' %prec UNARY_OP
+        | '-' %prec UNARY_OP
+        | '!' %prec UNARY_OP
 ;
 
 %%
