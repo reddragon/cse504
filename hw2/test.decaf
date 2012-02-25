@@ -28,7 +28,8 @@ class Temp extends Temp2 {
   public void do_more() {
     if(true) 
     { if(true) { } else { } } else { } 
-
-    for(;true;) { } 
+    
+    int i = 2;
+    for(i = 3;(i+10)<100;i++,i+=10) { } 
   }
 }
