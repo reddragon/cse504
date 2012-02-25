@@ -34,9 +34,12 @@ void yyerror(const char *s);
 %token <ival> INT
 %token ENDL
 
-%nonassoc REL_OP "<=" ">=" "!=" "==" '<' '>'
+%nonassoc LOWEST
 %right '=' EQ_OP
-%left BOOL_OP "&&" "||"
+%left BOOL_OR_OP "||"
+%left BOOL_AND_OP "&&"
+%nonassoc EQUALITY_OP "!=" "=="
+%nonassoc INEQUALITY_OP "<=" ">=" '<' '>'
 %left '+' '-' SUM_OP
 %left PRODUCT_OP '*' '/'
 %left UNARY_OP '!'
@@ -130,8 +133,12 @@ formals: formal_param
 formal_param: type variable
 ;
 
-block: '{' statement '}'
+block: '{' non_empty_statements '}'
      | '{' '}'
+;
+
+non_empty_statements: non_empty_statements statement
+                    | statement
 ;
 
 /*
@@ -180,25 +187,28 @@ expr: primary
     | expr sum_op expr 
     | expr product_op expr
     | expr rel_op expr
-    | expr bool_op expr
+    | expr BOOL_OR_OP expr
+    | expr BOOL_AND_OP expr
     | unary_op expr %prec UNARY_OP
 ;
 */
 
-expr: expr rel_op bool_expr %prec REL_OP
-    | bool_expr
+expr: expr INEQUALITY_OP bool_expr %prec INEQUALITY_OP
+    | expr EQUALITY_OP bool_expr %prec EQUALITY_OP
+    | bool_expr %prec LOWEST
 ;
 
-bool_expr: bool_expr bool_op sum_expr %prec BOOL_OP
-         | sum_expr
+bool_expr: bool_expr BOOL_OR_OP sum_expr %prec BOOL_OR_OP
+         | BOOL_AND_OP sum_expr %prec BOOL_AND_OP
+         | sum_expr %prec LOWEST
 ;
 
 sum_expr: sum_expr sum_op product_expr %prec SUM_OP
-        | product_expr
+        | product_expr %prec LOWEST
 ;
 
 product_expr: product_expr product_op unary_expr %prec PRODUCT_OP
-            | unary_expr
+            | unary_expr %prec LOWEST
 ;
 
 unary_expr: unary_op expr %prec UNARY_OP
@@ -272,12 +282,6 @@ sum_op: '+'
 ;
 
 product_op: PRODUCT_OP
-;
-
-rel_op: REL_OP
-;
-
-bool_op: BOOL_OP
 ;
 
 unary_op: '+' %prec UNARY_OP
