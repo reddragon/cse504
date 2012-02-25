@@ -128,7 +128,7 @@ statement: IF '(' expr ')' statement else
            { cout << "For statement on line number " << lno << endl; }
          | RETURN optional_expr ';'
            { cout << "Return statement on line number " << lno << endl; }
-         | statement_expr
+         | statement_expr ';'
          | BREAK ';'
            { cout << "Break statement on line number " << lno << endl; }
          | CONTINUE ';'
