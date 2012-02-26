@@ -10,8 +10,8 @@ function execute {
   done;
 }
 
-
+echo "Running tests"
 ls tests/*.decaf | execute
-
+echo "Successful"
 
 

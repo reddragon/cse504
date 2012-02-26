@@ -7,5 +7,8 @@ decaf.tab.c decaf.tab.h: decaf.y
 lex.yy.c: decaf.l decaf.tab.h
 	flex decaf.l
 
+tests: lex.yy.c decaf.tab.c decaf.tab.h
+	make; ./tests.sh
+
 clean:
 	rm decafch lex.yy.c decaf.tab.c decaf.tab.h decaf.output > /dev/null 2>&1
