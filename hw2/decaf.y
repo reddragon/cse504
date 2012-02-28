@@ -36,6 +36,7 @@ void yyerror(const char *s);
 %token ENDL
 
 %nonassoc LOWEST
+
 %right '=' EQ_OP
 %left BOOL_OR_OP "||"
 %left BOOL_AND_OP "&&"
@@ -148,8 +149,10 @@ statements: statements statement
 ;
 */
 
-statement: IF '(' expr ')' statement else
+statement: IF '(' expr ')' statement ELSE statement
            { cout << "If-Else block on line number " << yylineno << endl; }
+         | IF '(' expr ')' statement
+           { cout << "If block on line number " << yylineno << endl; }
          | WHILE '(' expr ')' statement
            { cout << "While statement on line number " << yylineno << endl; }
          | FOR '(' optional_statement_expr ';' expr ';' optional_statement_expr ')' statement
@@ -167,10 +170,6 @@ statement: IF '(' expr ')' statement else
          | block
          | var_decl
          | ';'
-;
-
-else: ELSE statement
-      |
 ;
 
 optional_statement_expr:  statement_expr
