@@ -273,7 +273,7 @@ unary_op: '+' %prec UNARY_OP
 
 void 
 yyerror(const char * s) {
-   cerr << "Error on line number" << yylineno << ": " << s << endl;
+   cout << "Error on line number " << yylineno << ": " << s << endl;
 }
 
 int
@@ -291,8 +291,6 @@ main(int argc, char ** argv) {
     int ret = yyparse();
     if (!ret) {
         cout << "Yes" << endl;
-    } else {
-        cout << "Failed to Parse." << endl;
     }
     return ret;
 }
