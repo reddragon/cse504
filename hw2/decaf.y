@@ -277,15 +277,21 @@ yyerror(const char * s) {
 }
 
 int
-main() {
+main(int argc, char ** argv) {
     #ifndef DEBUG
       freopen("/dev/null", "w", stderr);
     #endif
+    if(argc == 2) {
+      if(freopen(argv[1], "r", stdin) == NULL) {
+        cout << "Could not open file" << endl;
+        return 1;
+      }
+    }
 
     int ret = yyparse();
     if(!ret)
-      cout << "OK" << endl;
+      cout << "Ok." << endl;
     else
-      cout << "Error!" << endl;
+      cout << "Failed to Parse." << endl;
     return ret;
 }
