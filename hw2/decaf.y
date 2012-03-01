@@ -57,11 +57,11 @@ class_decls: class_decls class_decl
 ;
 
 class_decl: CLASS IDENTIFIER optionally_extends '{' class_body_contents '}' 
-              { cout << "New class " << $2 << " defined " << endl; }
+              { cerr << "New class " << $2 << " defined " << endl; }
 ;
 
 optionally_extends: EXTENDS IDENTIFIER
-                    { cout << "This class extends the class " << $2 << endl; }
+                    { cerr << "This class extends the class " << $2 << endl; }
                   |
 ;
 
@@ -101,9 +101,9 @@ variables: variables ',' variable
 ;
 
 variable: IDENTIFIER array_dimensions
-          { cout << "New array variable " << $1 << endl; }
+          { cerr << "New array variable " << $1 << endl; }
         | IDENTIFIER
-          { cout << "New variable " << $1 << endl; }
+          { cerr << "New variable " << $1 << endl; }
 ;
 
 array_dimensions: array_dimensions '[' ']'
@@ -111,9 +111,9 @@ array_dimensions: array_dimensions '[' ']'
 ;
 
 method_decl: modifier type IDENTIFIER paren_formals block
-             { cout << "New function " << $3 << endl; }
+             { cerr << "New function " << $3 << endl; }
            | modifier VOID IDENTIFIER paren_formals block
-             { cout << "New function " << $3 << endl; }
+             { cerr << "New function " << $3 << endl; }
 ;
 
 constructor_decl: modifier IDENTIFIER paren_formals block
@@ -151,23 +151,23 @@ statements: statements statement
 */
 
 statement: IF '(' expr ')' statement ELSE statement
-           { cout << "If-Else block on line number " << yylineno << endl; }
+           { cerr << "If-Else block on line number " << yylineno << endl; }
          | IF '(' expr ')' statement
-           { cout << "If block on line number " << yylineno << endl; }
+           { cerr << "If block on line number " << yylineno << endl; }
          | WHILE '(' expr ')' statement
-           { cout << "While statement on line number " << yylineno << endl; }
+           { cerr << "While statement on line number " << yylineno << endl; }
          | FOR '(' optional_statement_expr ';' expr ';' optional_statement_expr ')' statement
-           { cout << "For statement on line number " << yylineno << endl; }
+           { cerr << "For statement on line number " << yylineno << endl; }
          | FOR '(' optional_statement_expr ';' ';' optional_statement_expr ')' statement
-           { cout << "For statement on line number " << yylineno << endl; }
+           { cerr << "For statement on line number " << yylineno << endl; }
          | RETURN expr ';'
-           { cout << "Return statement on line number " << yylineno << endl; }
+           { cerr << "Return statement on line number " << yylineno << endl; }
          | RETURN ';'
          | statement_expr ';'
          | BREAK ';'
-           { cout << "Break statement on line number " << yylineno << endl; }
+           { cerr << "Break statement on line number " << yylineno << endl; }
          | CONTINUE ';'
-           { cout << "Continue statement on line number " << yylineno << endl; }
+           { cerr << "Continue statement on line number " << yylineno << endl; }
          | block
          | var_decl
          | ';'
@@ -238,7 +238,7 @@ array_access: primary '[' expr ']'
 ;
 
 method_invocation: field_access '(' optional_arguments ')'
-                   { cout << "Invoked a method on line number " << yylineno << endl; }
+                   { cerr << "Invoked a method on line number " << yylineno << endl; }
 ;
 
 assign: lhs '=' expr %prec EQ_OP
@@ -273,7 +273,7 @@ unary_op: '+' %prec UNARY_OP
 
 void 
 yyerror(const char * s) {
-    fprintf(stderr, "Error on line number %d: %s\n", yylineno, s);
+   cerr << "Error on line number" << yylineno << ": " << s << endl;
 }
 
 int
@@ -283,5 +283,9 @@ main() {
     #endif
 
     int ret = yyparse();
+    if(!ret)
+      cout << "OK" << endl;
+    else
+      cout << "Error!" << endl;
     return ret;
 }
