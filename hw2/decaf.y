@@ -6,6 +6,7 @@
 #include <string>
 #include <stack>
 #include <assert.h>
+#include <cstdlib>
 
 using namespace std;
 
@@ -219,17 +220,17 @@ unary_expr: unary_op expr %prec UNARY_OP
 ;
 
 literal: INT
-         { cout << "Integer literal encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "Integer literal encountered: " << $1 << " on line number " << yylineno << endl; }
        | FLOAT
-         { cout << "Float literal encounterd: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "Float literal encounterd: " << $1 << " on line number " << yylineno << endl; }
        | _NULL
-         { cout << "NULL encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "NULL encountered: " << $1 << " on line number " << yylineno << endl; }
        | TRUE
-         { cout << "true encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "true encountered: " << $1 << " on line number " << yylineno << endl; }
        | FALSE
-         { cout << "false encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "false encountered: " << $1 << " on line number " << yylineno << endl; }
        | STRING_LITERAL
-         { cout << "string encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "string encountered: " << $1 << " on line number " << yylineno << endl; }
 ;
 
 primary:  literal
@@ -301,6 +302,10 @@ yyerror(const char * s) {
 
 int
 main() {
+    #ifndef DEBUG
+      freopen("/dev/null", "w", stderr);
+    #endif
+
     int ret = yyparse();
     return ret;
 }
