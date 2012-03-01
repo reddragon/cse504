@@ -37,6 +37,7 @@ void yyerror(const char *s);
 %token ENDL
 
 %nonassoc LOWEST
+
 %right '=' EQ_OP
 %left BOOL_OR_OP "||"
 %left BOOL_AND_OP "&&"
@@ -149,8 +150,10 @@ statements: statements statement
 ;
 */
 
-statement: IF '(' expr ')' statement else
+statement: IF '(' expr ')' statement ELSE statement
            { cout << "If-Else block on line number " << yylineno << endl; }
+         | IF '(' expr ')' statement
+           { cout << "If block on line number " << yylineno << endl; }
          | WHILE '(' expr ')' statement
            { cout << "While statement on line number " << yylineno << endl; }
          | FOR '(' optional_statement_expr ';' expr ';' optional_statement_expr ')' statement
@@ -170,10 +173,6 @@ statement: IF '(' expr ')' statement else
          | ';'
 ;
 
-else: ELSE statement
-      |
-;
-
 optional_statement_expr:  statement_expr
                        |
 ;
@@ -182,42 +181,19 @@ statement_expr: assign
               | method_invocation
 ;
 
-/*
+
 expr: primary
     | assign
     | new_array
-    | expr sum_op expr 
-    | expr product_op expr
-    | expr rel_op expr
-    | expr BOOL_OR_OP expr
-    | expr BOOL_AND_OP expr
-    | unary_op expr %prec UNARY_OP
-;
-*/
-
-expr: expr INEQUALITY_OP bool_expr %prec INEQUALITY_OP
-    | expr EQUALITY_OP bool_expr %prec EQUALITY_OP
-    | bool_expr %prec LOWEST
+    | expr sum_op expr         %prec SUM_OP
+    | expr product_op expr     %prec PRODUCT_OP
+    | expr INEQUALITY_OP expr  %prec INEQUALITY_OP
+    | expr EQUALITY_OP expr    %prec EQUALITY_OP
+    | expr BOOL_OR_OP expr     %prec BOOL_OR_OP
+    | expr BOOL_AND_OP expr    %prec BOOL_AND_OP
+    | unary_op expr            %prec UNARY_OP
 ;
 
-bool_expr: bool_expr BOOL_OR_OP sum_expr %prec BOOL_OR_OP
-         | BOOL_AND_OP sum_expr %prec BOOL_AND_OP
-         | sum_expr %prec LOWEST
-;
-
-sum_expr: sum_expr sum_op product_expr %prec SUM_OP
-        | product_expr %prec LOWEST
-;
-
-product_expr: product_expr product_op unary_expr %prec PRODUCT_OP
-            | unary_expr %prec LOWEST
-;
-
-unary_expr: unary_op expr %prec UNARY_OP
-          | primary
-          | assign
-          | new_array
-;
 
 literal: INT
          { cerr << "Integer literal encountered: " << $1 << " on line number " << yylineno << endl; }
