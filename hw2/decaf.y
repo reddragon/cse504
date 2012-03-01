@@ -289,9 +289,10 @@ main(int argc, char ** argv) {
     }
 
     int ret = yyparse();
-    if(!ret)
-      cout << "Ok." << endl;
-    else
-      cout << "Failed to Parse." << endl;
+    if (!ret) {
+        cout << "Yes" << endl;
+    } else {
+        cout << "Failed to Parse." << endl;
+    }
     return ret;
 }
