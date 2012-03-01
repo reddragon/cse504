@@ -6,6 +6,7 @@
 #include <string>
 #include <stack>
 #include <assert.h>
+#include <cstdlib>
 
 using namespace std;
 
@@ -56,11 +57,11 @@ class_decls: class_decls class_decl
 ;
 
 class_decl: CLASS IDENTIFIER optionally_extends '{' class_body_contents '}' 
-              { cout << "New class " << $2 << " defined " << endl; }
+              { cerr << "New class " << $2 << " defined " << endl; }
 ;
 
 optionally_extends: EXTENDS IDENTIFIER
-                    { cout << "This class extends the class " << $2 << endl; }
+                    { cerr << "This class extends the class " << $2 << endl; }
                   |
 ;
 
@@ -100,9 +101,9 @@ variables: variables ',' variable
 ;
 
 variable: IDENTIFIER array_dimensions
-          { cout << "New array variable " << $1 << endl; }
+          { cerr << "New array variable " << $1 << endl; }
         | IDENTIFIER
-          { cout << "New variable " << $1 << endl; }
+          { cerr << "New variable " << $1 << endl; }
 ;
 
 array_dimensions: array_dimensions '[' ']'
@@ -110,9 +111,9 @@ array_dimensions: array_dimensions '[' ']'
 ;
 
 method_decl: modifier type IDENTIFIER paren_formals block
-             { cout << "New function " << $3 << endl; }
+             { cerr << "New function " << $3 << endl; }
            | modifier VOID IDENTIFIER paren_formals block
-             { cout << "New function " << $3 << endl; }
+             { cerr << "New function " << $3 << endl; }
 ;
 
 constructor_decl: modifier IDENTIFIER paren_formals block
@@ -150,23 +151,23 @@ statements: statements statement
 */
 
 statement: IF '(' expr ')' statement ELSE statement
-           { cout << "If-Else block on line number " << yylineno << endl; }
+           { cerr << "If-Else block on line number " << yylineno << endl; }
          | IF '(' expr ')' statement
-           { cout << "If block on line number " << yylineno << endl; }
+           { cerr << "If block on line number " << yylineno << endl; }
          | WHILE '(' expr ')' statement
-           { cout << "While statement on line number " << yylineno << endl; }
+           { cerr << "While statement on line number " << yylineno << endl; }
          | FOR '(' optional_statement_expr ';' expr ';' optional_statement_expr ')' statement
-           { cout << "For statement on line number " << yylineno << endl; }
+           { cerr << "For statement on line number " << yylineno << endl; }
          | FOR '(' optional_statement_expr ';' ';' optional_statement_expr ')' statement
-           { cout << "For statement on line number " << yylineno << endl; }
+           { cerr << "For statement on line number " << yylineno << endl; }
          | RETURN expr ';'
-           { cout << "Return statement on line number " << yylineno << endl; }
+           { cerr << "Return statement on line number " << yylineno << endl; }
          | RETURN ';'
          | statement_expr ';'
          | BREAK ';'
-           { cout << "Break statement on line number " << yylineno << endl; }
+           { cerr << "Break statement on line number " << yylineno << endl; }
          | CONTINUE ';'
-           { cout << "Continue statement on line number " << yylineno << endl; }
+           { cerr << "Continue statement on line number " << yylineno << endl; }
          | block
          | var_decl
          | ';'
@@ -195,17 +196,17 @@ expr: primary
 
 
 literal: INT
-         { cout << "Integer literal encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "Integer literal encountered: " << $1 << " on line number " << yylineno << endl; }
        | FLOAT
-         { cout << "Float literal encounterd: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "Float literal encounterd: " << $1 << " on line number " << yylineno << endl; }
        | _NULL
-         { cout << "NULL encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "NULL encountered: " << $1 << " on line number " << yylineno << endl; }
        | TRUE
-         { cout << "true encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "true encountered: " << $1 << " on line number " << yylineno << endl; }
        | FALSE
-         { cout << "false encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "false encountered: " << $1 << " on line number " << yylineno << endl; }
        | STRING_LITERAL
-         { cout << "string encountered: " << $1 << " on line number " << yylineno << endl; }
+         { cerr << "string encountered: " << $1 << " on line number " << yylineno << endl; }
 ;
 
 primary:  literal
@@ -237,7 +238,7 @@ array_access: primary '[' expr ']'
 ;
 
 method_invocation: field_access '(' optional_arguments ')'
-                   { cout << "Invoked a method on line number " << yylineno << endl; }
+                   { cerr << "Invoked a method on line number " << yylineno << endl; }
 ;
 
 assign: lhs '=' expr %prec EQ_OP
@@ -272,11 +273,25 @@ unary_op: '+' %prec UNARY_OP
 
 void 
 yyerror(const char * s) {
-    fprintf(stderr, "Error on line number %d: %s\n", yylineno, s);
+   cerr << "Error on line number" << yylineno << ": " << s << endl;
 }
 
 int
-main() {
+main(int argc, char ** argv) {
+    #ifndef DEBUG
+      freopen("/dev/null", "w", stderr);
+    #endif
+    if(argc == 2) {
+      if(freopen(argv[1], "r", stdin) == NULL) {
+        cout << "Could not open file" << endl;
+        return 1;
+      }
+    }
+
     int ret = yyparse();
+    if(!ret)
+      cout << "Ok." << endl;
+    else
+      cout << "Failed to Parse." << endl;
     return ret;
 }
