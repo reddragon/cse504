@@ -273,7 +273,7 @@ unary_op: '+' %prec UNARY_OP
 
 void 
 yyerror(const char * s) {
-   cout << "Error on line number " << yylineno << ": " << s << endl;
+    cout << "Error on line number " << yylineno << ": " << "Got '" << yytext << "', " << s << endl;
 }
 
 int
