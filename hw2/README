@@ -1,1 +1,18 @@
+How to compile:
+---------------
 
+$ make
+
+How to run:
+-----------
+
+$ ./decafch [optional file name]
+
+
+File contents:
+--------------
+
+1. decaf.l: Flex based lexer
+2. decaf.y: Bison based grammar parser
+3. Makefile: Compilation rules
+4. README: This file
