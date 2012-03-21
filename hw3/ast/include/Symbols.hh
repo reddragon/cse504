@@ -3,6 +3,7 @@
 
 #define SYMBOLS_H
 
+#include <cstring>
 #include <list>
 #include <ext/hash_map>
 
