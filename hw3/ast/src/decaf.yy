@@ -14,6 +14,11 @@ extern int  yylex ();
 extern list<Entity *> *toplevel;  // list of top-level classes
 extern EntityTable *global_symtab; // global symbol table
 
+// Global Variables
+list<Entity *> *class_list, *class_members;
+Entity * new_class;
+bool visibility_flag, static_flag;
+Type * field_type;
 %}
 
 %token TOK_BOOLEAN TOK_BREAK TOK_CLASS TOK_CONTINUE TOK_ELSE 
@@ -36,7 +41,8 @@ extern EntityTable *global_symtab; // global symbol table
         int   int_val;
         float float_val;
         char char_val;
-	bool bool_val;
+	      bool bool_val;
+        list<Entity*>* entity_list;
 	/****
 	Add fields to hold other types of attribute values here
 
@@ -54,6 +60,8 @@ extern EntityTable *global_symtab; // global symbol table
 %left TOK_MULTIPLY TOK_DIVIDE
 %left TOK_NOT 
 
+%type <string_val> TOK_ID
+%type <entity_list> ClassDeclarations
 /*****
 Define the type of attribute values for grammar symbols here.
 
@@ -75,12 +83,15 @@ of YYSTYPE
 /***************************** DECLARATIONS  ********************************/
 /**/
 
-Program :  ClassDeclarations {
+Program :  { 
+    class_list = new list<Entity *>;
+  }
+  ClassDeclarations {
 	/* In the action for this production, set 
 	the global variable "toplevel" to the list of entities representing 
 	the classes (i.e. the attribute of ClassDeclarations).
 	*/
-	toplevel = NULL;  // This is a placeholder. Change this!!
+	toplevel = class_list;  // This is a placeholder. Change this!!
 	}
 	;
 
@@ -90,15 +101,26 @@ ClassDeclarations:
 	;
 
 ClassDeclaration:
-	TOK_CLASS TOK_ID ExtendsOpt
-		TOK_OPEN_BRACE 
+	TOK_CLASS TOK_ID ExtendsOpt {
+      class_members = new list<Entity *>;
+      new_class = new ClassEntity($2, NULL, class_members);
+      
+    }
+		TOK_OPEN_BRACE {
+      // enter_scope();
+    }
 		ClassBodyDecls 
-		TOK_CLOSE_BRACE
+		TOK_CLOSE_BRACE {
+      // leave_scope();
+      class_list->push_back(new_class);
+    }
 		;
 
 ExtendsOpt:
-	  TOK_EXTENDS TOK_ID 
-        | 
+	  TOK_EXTENDS TOK_ID {
+      // TODO Fill this up
+    }
+  | 
 	;
 
 ClassBodyDecls:
@@ -112,30 +134,49 @@ ClassBodyDecl:
           | ConstructorDecl
 	  ;
 
-FieldDecl: Modifier Type TOK_ID DimStar TOK_SEMICOLON
+FieldDecl: {
+            visibility_flag = true;
+            static_flag = false;
+          }
+          Modifier Type TOK_ID DimStar TOK_SEMICOLON {
+            Entity * new_field = new FieldEntity($4, visibility_flag, static_flag, field_type, 0);
+            class_members->push_back(new_field);
+          }
 	 ;
 Modifier: VisibilityOpt StaticOpt
 	 ;
 
 
 VisibilityOpt : 
-          TOK_PUBLIC
-        | TOK_PRIVATE
+          TOK_PUBLIC 
+        | TOK_PRIVATE {
+          visibility_flag = false;
+        }
         | 
 	;
 
 StaticOpt:
-          TOK_STATIC
+          TOK_STATIC {
+          static_flag = true;
+        }
         |
 	;
 
 VarDecl: Type Variables TOK_SEMICOLON 
 	 ;
 
-Type:	  TOK_INT
-	| TOK_FLOAT
-	| TOK_BOOLEAN
-	| TOK_ID
+Type:	  TOK_INT {
+    field_type = new IntType(); 
+  }
+	| TOK_FLOAT {
+    field_type = new FloatType();
+  }
+	| TOK_BOOLEAN {
+    field_type = new BooleanType();
+  }
+	| TOK_ID {
+    field_type = new StringType();
+  }
 	;
 
 Variables: Variable VariablesCommaList 	
