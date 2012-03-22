@@ -15,11 +15,12 @@ extern list<Entity *> *toplevel;  // list of top-level classes
 extern EntityTable *global_symtab; // global symbol table
 
 // Global Variables
-list<Entity *> *class_list, *class_members;
+list<Entity *> *class_list, *class_members, *formal_params;
 Entity * new_class, * new_method;
 bool visibility_flag, static_flag; 
 Type * type;
 char * method_name;
+Statement * method_body;
 %}
 
 %token TOK_BOOLEAN TOK_BREAK TOK_CLASS TOK_CONTINUE TOK_ELSE 
@@ -61,7 +62,8 @@ char * method_name;
 %left TOK_MULTIPLY TOK_DIVIDE
 %left TOK_NOT 
 
-%type <string_val> TOK_ID
+%error-verbose
+%type <string_val> TOK_ID 
 %type <entity_list> ClassDeclarations
 /*****
 Define the type of attribute values for grammar symbols here.
@@ -98,7 +100,7 @@ Program :  {
 
 ClassDeclarations:
 	  ClassDeclarations ClassDeclaration 
-    | { class_list = NULL; }
+    | 
 	;
 
 ClassDeclaration:
@@ -135,12 +137,9 @@ ClassBodyDecl:
     | ConstructorDecl
 	  ;
 
-FieldDecl: {
-            visibility_flag = true;
-            static_flag = false;
-          }
-          Modifier Type TOK_ID DimStar TOK_SEMICOLON {
-            Entity * new_field = new FieldEntity($4, visibility_flag, static_flag, type, 0);
+FieldDecl: Modifier Type TOK_ID DimStar TOK_SEMICOLON {
+            // TODO Fix the dimensions
+            Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, type, 0);
             class_members->push_back(new_field);
           }
 	 ;
@@ -149,7 +148,9 @@ Modifier: VisibilityOpt StaticOpt
 
 
 VisibilityOpt : 
-          TOK_PUBLIC 
+          TOK_PUBLIC {
+          visibility_flag = true;
+        }
         | TOK_PRIVATE {
           visibility_flag = false;
         }
@@ -160,7 +161,7 @@ StaticOpt:
           TOK_STATIC {
           static_flag = true;
         }
-        |
+        | { static_flag = false; }
 	;
 
 VarDecl: Type Variables TOK_SEMICOLON 
@@ -193,7 +194,13 @@ VariablesCommaList:
 
 MethodDecl:
 	  MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
-      //new_method = new MethodEntity();
+      // TODO Fix these
+      formal_params = new list<Entity *>;
+      //formal_params->push_back(new SkipStatement());
+      list<Statement *> * stmt_list = new list<Statement *>;
+      method_body = new BlockStatement(stmt_list);
+      new_method = new MethodEntity(method_name, visibility_flag, static_flag, type, formal_params, method_body);
+      class_members->push_back(new_method);
     }
 	  ;
 
