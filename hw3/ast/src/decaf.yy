@@ -16,9 +16,10 @@ extern EntityTable *global_symtab; // global symbol table
 
 // Global Variables
 list<Entity *> *class_list, *class_members;
-Entity * new_class;
-bool visibility_flag, static_flag;
-Type * field_type;
+Entity * new_class, * new_method;
+bool visibility_flag, static_flag; 
+Type * type;
+char * method_name;
 %}
 
 %token TOK_BOOLEAN TOK_BREAK TOK_CLASS TOK_CONTINUE TOK_ELSE 
@@ -97,7 +98,7 @@ Program :  {
 
 ClassDeclarations:
 	  ClassDeclarations ClassDeclaration 
-        | 
+    | { class_list = NULL; }
 	;
 
 ClassDeclaration:
@@ -131,7 +132,7 @@ ClassBodyDecls:
 ClassBodyDecl:	
 	    FieldDecl
 	  | MethodDecl
-          | ConstructorDecl
+    | ConstructorDecl
 	  ;
 
 FieldDecl: {
@@ -139,7 +140,7 @@ FieldDecl: {
             static_flag = false;
           }
           Modifier Type TOK_ID DimStar TOK_SEMICOLON {
-            Entity * new_field = new FieldEntity($4, visibility_flag, static_flag, field_type, 0);
+            Entity * new_field = new FieldEntity($4, visibility_flag, static_flag, type, 0);
             class_members->push_back(new_field);
           }
 	 ;
@@ -166,16 +167,16 @@ VarDecl: Type Variables TOK_SEMICOLON
 	 ;
 
 Type:	  TOK_INT {
-    field_type = new IntType(); 
+    type = new IntType(); 
   }
 	| TOK_FLOAT {
-    field_type = new FloatType();
+    type = new FloatType();
   }
 	| TOK_BOOLEAN {
-    field_type = new BooleanType();
+    type = new BooleanType();
   }
 	| TOK_ID {
-    field_type = new StringType();
+    type = new StringType();
   }
 	;
 
@@ -191,11 +192,18 @@ VariablesCommaList:
 	;
 
 MethodDecl:
-	  MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block 
+	  MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
+      //new_method = new MethodEntity();
+    }
 	  ;
 
-MethodHead: Modifier Type TOK_ID 
-         | Modifier TOK_VOID TOK_ID 
+MethodHead: Modifier Type TOK_ID {
+            method_name = $3;
+           }
+         | Modifier TOK_VOID TOK_ID {
+           method_name = $3;
+           type = new VoidType();
+         }
 	 ;
 
 FormalsOpt:

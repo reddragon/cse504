@@ -10,7 +10,7 @@ main:	$(objects)
 	$(CXX) $(CXXFLAGS) -o demo $(objects)
 
 decaf.tab.hh decaf.tab.cc:	decaf.yy
-	bison -d decaf.yy
+	bison -d --report=all decaf.yy
 
 decaf.tab.o:	decaf.tab.cc $(includes)
 Ast.o:		Ast.cc  $(includes)
