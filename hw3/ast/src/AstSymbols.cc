@@ -72,7 +72,7 @@ MethodEntity::MethodEntity(const char* name,
   static_flag_ = static_flag;
   return_type_ = return_type;
   formal_params_ = formal_params;
-  method_body_ = method_body_;
+  method_body_ = method_body;
   global_symtab->add_entity(this);
 }
 
@@ -138,6 +138,9 @@ void MethodEntity::print() {
     cout << ",";
   }
   cout << ")" << endl;
+  if(method_body() == NULL) {
+	cout << "Problem!" << endl;
+  }
   method_body()->print();
 }
 

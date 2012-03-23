@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <iostream>
-
+#include  <stack>
 #include "Ast.hh"
 
 using namespace std;
@@ -21,6 +21,8 @@ bool visibility_flag, static_flag;
 Type * type;
 char * method_name;
 Statement * method_body;
+stack< list<Entity *> * > block_stmts;
+list<Statement *> * stmt_list;
 %}
 
 %token TOK_BOOLEAN TOK_BREAK TOK_CLASS TOK_CONTINUE TOK_ELSE 
@@ -197,7 +199,7 @@ MethodDecl:
       // TODO Fix these
       formal_params = new list<Entity *>;
       //formal_params->push_back(new SkipStatement());
-      list<Statement *> * stmt_list = new list<Statement *>;
+      stmt_list = new list<Statement *>;
       method_body = new BlockStatement(stmt_list);
       new_method = new MethodEntity(method_name, visibility_flag, static_flag, type, formal_params, method_body);
       class_members->push_back(new_method);
@@ -235,7 +237,15 @@ ConstructorDecl:
 /**/
 
 
-Block:	  TOK_OPEN_BRACE  StmtStar TOK_CLOSE_BRACE 	
+Block:	  TOK_OPEN_BRACE {
+      // enter_block();
+    } StmtStar {
+       
+      
+    }
+    TOK_CLOSE_BRACE {
+      // leave_block();
+    }
 	  ;
 
 StmtStar:
