@@ -30,9 +30,8 @@ list<Statement *> * stmt_list;
         TOK_NULL TOK_PRIVATE TOK_PUBLIC TOK_RETURN TOK_STATIC TOK_SUPER
         TOK_THIS TOK_TRUE TOK_VOID TOK_WHILE TOK_DO
         TOK_INT_CONST TOK_FLOAT_CONST TOK_STRING_CONST 
-        TOK_ID 
-        TOK_COMMA TOK_DOT TOK_SEMICOLON
-	TOK_OPEN_SQ_BRACKET TOK_CLOSE_SQ_BRACKET
+        TOK_ID TOK_COMMA TOK_DOT TOK_SEMICOLON
+	      TOK_OPEN_SQ_BRACKET TOK_CLOSE_SQ_BRACKET
         TOK_OPEN_PAREN TOK_CLOSE_PAREN TOK_OPEN_BRACE TOK_CLOSE_BRACE 
         TOK_PLUS TOK_MINUS TOK_MULTIPLY TOK_DIVIDE 
         TOK_PLUS_PLUS TOK_MINUS_MINUS TOK_EQUAL TOK_AND TOK_OR TOK_NOT 
@@ -47,6 +46,9 @@ list<Statement *> * stmt_list;
         char char_val;
 	      bool bool_val;
         list<Entity*>* entity_list;
+        Statement * stmt;
+        Expression * expr; 
+        list<Expression*>* exprs;
 	/****
 	Add fields to hold other types of attribute values here
 
@@ -65,8 +67,13 @@ list<Statement *> * stmt_list;
 %left TOK_NOT 
 
 %error-verbose
-%type <string_val> TOK_ID 
+%type <string_val> TOK_ID TOK_STRING_CONST
+%type <int_val> TOK_INT_CONST
+%type <float_val> TOK_FLOAT_CONST
 %type <entity_list> ClassDeclarations
+%type <stmt> Stmt OptElsePart
+%type <expr> Expr Literal Primary MethodInvocation
+%type <exprs> ArgumentListOpt CommaExprStar
 /*****
 Define the type of attribute values for grammar symbols here.
 
@@ -201,31 +208,34 @@ MethodDecl:
       //formal_params->push_back(new SkipStatement());
       stmt_list = new list<Statement *>;
       method_body = new BlockStatement(stmt_list);
+      //method_body = $5;
       new_method = new MethodEntity(method_name, visibility_flag, static_flag, type, formal_params, method_body);
       class_members->push_back(new_method);
     }
 	  ;
 
-MethodHead: Modifier Type TOK_ID {
-            method_name = $3;
-           }
-         | Modifier TOK_VOID TOK_ID {
-           method_name = $3;
-           type = new VoidType();
-         }
-	 ;
-
-FormalsOpt:
-	  FormalParam FormalParamCommaList
-        | 
+MethodHead: 
+  Modifier Type TOK_ID {
+    method_name = $3;
+  }
+  | Modifier TOK_VOID TOK_ID {
+    method_name = $3;
+    type = new VoidType();
+  }
 	;
 
-FormalParam: Type Variable
+FormalsOpt:
+  FormalParam FormalParamCommaList
+  | 
+	;
+
+FormalParam: 
+  Type Variable
 	;
 
 FormalParamCommaList: 
-	  TOK_COMMA FormalParam FormalParamCommaList
-        | 
+  TOK_COMMA FormalParam FormalParamCommaList
+  | 
 	;
 
 ConstructorDecl:
@@ -237,24 +247,27 @@ ConstructorDecl:
 /**/
 
 
-Block:	  TOK_OPEN_BRACE {
-      // enter_block();
-    } StmtStar {
-       
+Block:	  
+  TOK_OPEN_BRACE {
+    // enter_block();
+  } StmtStar {
+     
       
-    }
-    TOK_CLOSE_BRACE {
-      // leave_block();
-    }
-	  ;
+  }
+  TOK_CLOSE_BRACE {
+    // leave_block();
+  }
+	;
 
 StmtStar:
-	  Stmt StmtStar 
+  Stmt StmtStar 
 	| 
 	;
 
 
-Stmt:	  TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart
+Stmt:	  TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart {
+    $$ = new IfStatement($3, $5, $6); 
+  }
 	| TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt
 	| TOK_FOR TOK_OPEN_PAREN StmtExprOpt
 	                    TOK_SEMICOLON ExprOpt
@@ -273,8 +286,12 @@ Stmt:	  TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart
 	;
 
 OptElsePart:
-	  TOK_ELSE Stmt 
-	|
+  TOK_ELSE Stmt {
+    $$ = $2;
+  }
+	| {
+    $$ = new SkipStatement();
+  }
 	;
 
 StmtExprOpt:
@@ -296,21 +313,48 @@ StmtExpr:  Assignment
 /**/
 
 
-Primary:  Literal
-	| TOK_THIS
-	| TOK_SUPER
-	| TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN
-	| TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN 
-	| LeftHandSide
-	| MethodInvocation
+Primary:  Literal {
+    $$ = $1;
+  }
+	| TOK_THIS {
+    $$ = new ThisExpression();
+  }
+	| TOK_SUPER {
+    $$ = new SuperExpression();
+  }
+	| TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN {
+    // TODO Is this right?
+    $$ = $2;
+  }
+	| TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
+    // TODO Complete this
+    // TOK_ID is a class. 
+    // Check if TOK_ID has been declared in the scope.
+  }
+	| LeftHandSide {
+    // TODO What to do here?
+  }
+	| MethodInvocation {
+    $$ = $1;
+  }
 
 ArgumentListOpt: 	
-	  Expr CommaExprStar
-	|
+	Expr CommaExprStar {
+    $2->push_back($1);
+    $$ = $2;
+  }
+	| {
+    $$ = new list<Expression *>;
+  }
 	;
 
-CommaExprStar: TOK_COMMA Expr CommaExprStar
-	|
+CommaExprStar: TOK_COMMA Expr CommaExprStar {
+    $3->push_back($2);
+    $$ = $3;
+  }
+	| {
+    $$ = new list<Expression *>;
+  }
 	;
 
 FieldAccess:
@@ -321,27 +365,63 @@ ArrayAccess: Primary TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET
 	;
 
 MethodInvocation:
-	  Primary TOK_DOT TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN
+	  Primary TOK_DOT TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
+      $$ = new MethodInvocation($1, $3, $5);
+    }
 	|
-	  TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN
+	  TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
+      // TODO Fill this up
+    }
 	;
 
-Expr:	  Expr TOK_MULTIPLY Expr	
-	| Expr TOK_DIVIDE Expr
-	| Expr TOK_PLUS Expr	
-	| Expr TOK_MINUS Expr	
-	| Expr TOK_AND Expr	
-	| Expr TOK_OR Expr	
-	| Expr TOK_EQUAL_EQUAL Expr
-	| Expr TOK_NOT_EQUAL Expr	
-	| Expr TOK_LESSER Expr		
-	| Expr TOK_GREATER Expr		
-	| Expr TOK_LESSER_OR_EQUAL Expr	
-	| Expr TOK_GREATER_OR_EQUAL Expr
-	| TOK_MINUS Expr	%prec TOK_NOT
-	| TOK_PLUS Expr		%prec TOK_NOT	 
-	| TOK_NOT Expr
-	| Primary
+Expr:	  Expr TOK_MULTIPLY Expr {
+    $$ = new BinaryExpression(MUL, $1, $3);
+  }
+	| Expr TOK_DIVIDE Expr {
+    $$ = new BinaryExpression(DIV, $1, $3);
+  }
+	| Expr TOK_PLUS Expr {
+    $$ = new BinaryExpression(ADD, $1, $3);
+  }
+	| Expr TOK_MINUS Expr {
+    $$ = new BinaryExpression(SUB, $1, $3);
+  }
+	| Expr TOK_AND Expr {
+    $$ = new BinaryExpression(AND, $1, $3);
+  }
+	| Expr TOK_OR Expr {
+    $$ = new BinaryExpression(OR, $1, $3);
+  }
+	| Expr TOK_EQUAL_EQUAL Expr {
+    $$ = new BinaryExpression(EQ, $1, $3);
+  }
+	| Expr TOK_NOT_EQUAL Expr {
+    $$ = new BinaryExpression(NEQ, $1, $3);
+  }
+	| Expr TOK_LESSER Expr {
+    $$ = new BinaryExpression(LT, $1, $3);
+  }
+	| Expr TOK_GREATER Expr {
+    $$ = new BinaryExpression(GT, $1, $3);
+  }
+	| Expr TOK_LESSER_OR_EQUAL Expr	{
+    $$ = new BinaryExpression(LEQ, $1, $3);
+  }
+	| Expr TOK_GREATER_OR_EQUAL Expr {
+    $$ = new BinaryExpression(GEQ, $1, $3);
+  }
+	| TOK_MINUS Expr	%prec TOK_NOT {
+    $$ = new UnaryExpression(UMINUS, $2);
+  }
+	| TOK_PLUS Expr		%prec TOK_NOT	 {
+    $$ = $2;
+  }
+	| TOK_NOT Expr {
+    $$ = new UnaryExpression(NEG, $2);
+  }
+	| Primary {
+    $$ = $1;
+  }
 	| Assignment
 	| TOK_NEW Type DimExprPlus DimStar 
 	;	
@@ -374,12 +454,24 @@ LeftHandSide:
 	| ArrayAccess
 	;
 
-Literal:  TOK_INT_CONST
-	| TOK_FLOAT_CONST
-	| TOK_STRING_CONST
-	| TOK_NULL
-	| TOK_TRUE
-	| TOK_FALSE
+Literal:  TOK_INT_CONST {
+    $$ = new IntegerConstant($1);  
+  }
+	| TOK_FLOAT_CONST {
+    $$ = new FloatConstant($1);
+  }
+	| TOK_STRING_CONST {
+    $$ = new StringConstant($1);
+  }
+	| TOK_NULL {
+    $$ = new NullExpression();
+  }
+	| TOK_TRUE {
+    // TODO What to do here?
+  }
+	| TOK_FALSE {
+    // TODO What to do here?
+  }
 	;
 
 %%
