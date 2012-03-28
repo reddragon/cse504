@@ -1,4 +1,4 @@
-%{
+%{ /* -*-  Mode:C; c-basic-offset:8; indent-tabs-mode:nil -*- */
 #include <stdio.h>
 #include <iostream>
 #include  <stack>
@@ -114,26 +114,25 @@ ClassDeclarations:
 
 ClassDeclaration:
 	TOK_CLASS TOK_ID ExtendsOpt {
-      class_members = new list<Entity *>;
-      new_class = new ClassEntity($2, NULL, class_members);
-      
-    }
-		TOK_OPEN_BRACE {
-      // enter_scope();
-    }
-		ClassBodyDecls 
-		TOK_CLOSE_BRACE {
-      // leave_scope();
-      class_list->push_back(new_class);
-    }
-		;
+                class_members = new list<Entity *>;
+                new_class = new ClassEntity($2, NULL, class_members);
+        }
+        TOK_OPEN_BRACE {
+                // enter_scope();
+        }
+        ClassBodyDecls 
+        TOK_CLOSE_BRACE {
+                // leave_scope();
+                class_list->push_back(new_class);
+        }
+;
 
 ExtendsOpt:
 	  TOK_EXTENDS TOK_ID {
-      // TODO Fill this up
-    }
-  | 
-	;
+                  // TODO Fill this up
+          }
+          | 
+          ;
 
 ClassBodyDecls:
 	  ClassBodyDecls ClassBodyDecl
@@ -467,10 +466,12 @@ Literal:  TOK_INT_CONST {
     $$ = new NullExpression();
   }
 	| TOK_TRUE {
-    // TODO What to do here?
+                // TODO What to do here?
+                // A: new BooleanConstant(true) maybe?
   }
 	| TOK_FALSE {
-    // TODO What to do here?
+                // TODO What to do here?
+                // A: new BooleanConstant(false) maybe?
   }
 	;
 
