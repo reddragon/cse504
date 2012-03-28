@@ -114,6 +114,9 @@ ClassDeclarations:
 
 ClassDeclaration:
 	TOK_CLASS TOK_ID ExtendsOpt {
+                // FIXME Use $$ instead of new class
+                // FIXME Can there be a class inside a class?
+                //       If yes, then, use a stack instead of class_members
                 class_members = new list<Entity *>;
                 new_class = new ClassEntity($2, NULL, class_members);
         }
@@ -148,6 +151,7 @@ ClassBodyDecl:
 FieldDecl: Modifier Type TOK_ID DimStar TOK_SEMICOLON {
             // TODO Fix the dimensions
             Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, type, 0);
+            // FIXME Potential problem here
             class_members->push_back(new_field);
           }
 	 ;
