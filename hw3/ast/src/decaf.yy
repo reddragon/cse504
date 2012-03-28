@@ -322,8 +322,9 @@ Primary:  Literal {
     $$ = new SuperExpression();
   }
 	| TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN {
-    // TODO Is this right?
-    $$ = $2;
+                // TODO Is this right?
+                // A: It seems about right.
+                $$ = $2;
   }
 	| TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
     // TODO Complete this
@@ -331,7 +332,8 @@ Primary:  Literal {
     // Check if TOK_ID has been declared in the scope.
   }
 	| LeftHandSide {
-    // TODO What to do here?
+                // TODO What to do here?
+                // A: Maybe set it to Expression in the rule for LeftHandSide??
   }
 	| MethodInvocation {
     $$ = $1;
