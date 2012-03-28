@@ -334,6 +334,7 @@ Primary:  Literal {
 	| LeftHandSide {
                 // TODO What to do here?
                 // A: Maybe set it to Expression in the rule for LeftHandSide??
+                $$ = $1;
   }
 	| MethodInvocation {
     $$ = $1;
@@ -359,11 +360,18 @@ CommaExprStar: TOK_COMMA Expr CommaExprStar {
 	;
 
 FieldAccess:
-	  Primary TOK_DOT TOK_ID
-	| TOK_ID 	
-	;
-ArrayAccess: Primary TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET 
-	;
+        Primary TOK_DOT TOK_ID {
+                // TODO
+                $$ = new FieldAccess($1, $3);
+        }
+        | TOK_ID {
+                // TODO
+        }
+;
+
+ArrayAccess: Primary TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET {
+          }
+;
 
 MethodInvocation:
 	  Primary TOK_DOT TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
@@ -451,9 +459,13 @@ Assignment:
 	;
 
 LeftHandSide:
-	  FieldAccess
-	| ArrayAccess
-	;
+        FieldAccess {
+                // TODO
+        }
+        | ArrayAccess {
+                // TODO
+        }
+;
 
 Literal:  TOK_INT_CONST {
     $$ = new IntegerConstant($1);  
