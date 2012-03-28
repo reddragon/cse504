@@ -365,7 +365,7 @@ FieldAccess:
                 $$ = new FieldAccess($1, $3);
         }
         | TOK_ID {
-                // TODO
+                // TODO: How to handle this case?
         }
 ;
 
