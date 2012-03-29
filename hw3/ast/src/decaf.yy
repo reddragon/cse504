@@ -209,16 +209,16 @@ TOK_COMMA Variable VariablesCommaList
 ;
 
 MethodDecl:
-MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
-  // TODO Fix these
-  formal_params = new list<Entity *>;
-  //formal_params->push_back(new SkipStatement());
-  stmt_list = new list<Statement *>;
-  method_body = new BlockStatement(stmt_list);
-  //method_body = $5;
-  new_method = new MethodEntity(method_name, visibility_flag, static_flag, type, formal_params, method_body);
-  class_members->push_back(new_method);
-}
+    MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
+        // TODO Fix these
+        formal_params = new list<Entity *>;
+        //formal_params->push_back(new SkipStatement());
+        stmt_list = new list<Statement *>;
+        method_body = new BlockStatement(stmt_list);
+        //method_body = $5;
+        new_method = new MethodEntity(method_name, visibility_flag, static_flag, type, formal_params, method_body);
+        class_members->push_back(new_method);
+    }
 ;
 
 MethodHead: 
