@@ -16,7 +16,7 @@ extern EntityTable *global_symtab; // global symbol table
 
 // Global Variables
 list<Entity *> *class_list, *class_members, *formal_params;
-Entity * new_class, * new_method;
+Entity * new_method;
 bool visibility_flag, static_flag; 
 Type * type;
 char * method_name;
@@ -49,6 +49,7 @@ list<Statement *> * stmt_list;
   Statement * stmt;
   Expression * expr; 
   list<Expression*>* exprs;
+  Entity * entity;
   /****
     Add fields to hold other types of attribute values here
 
@@ -70,6 +71,7 @@ list<Entity*>* entity_list;
 %type <string_val> TOK_ID TOK_STRING_CONST
 %type <int_val> TOK_INT_CONST
 %type <float_val> TOK_FLOAT_CONST
+%type <entity> ClassDeclaration
 %type <entity_list> ClassDeclarations
 %type <stmt> Stmt OptElsePart
 %type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess
@@ -95,39 +97,42 @@ list<Entity*>* entity_list;
 /***************************** DECLARATIONS  ********************************/
 /**/
 
-Program :  { 
-  class_list = new list<Entity *>;
-}
-ClassDeclarations {
-  /* In the action for this production, set 
-     the global variable "toplevel" to the list of entities representing 
-     the classes (i.e. the attribute of ClassDeclarations).
-   */
-  toplevel = class_list;  // This is a placeholder. Change this!!
-}
+Program :  
+    ClassDeclarations {
+        /* In the action for this production, set 
+        the global variable "toplevel" to the list of entities representing 
+        the classes (i.e. the attribute of ClassDeclarations).
+        */
+        toplevel = $1; 
+    }
 ;
 
 ClassDeclarations:
-ClassDeclarations ClassDeclaration 
-| 
+    ClassDeclarations ClassDeclaration {
+        $1->push_back($2);
+        $$ = $1;
+    }
+    | {
+        $$ = new list<Entity *>;
+    }
 ;
 
 ClassDeclaration:
-TOK_CLASS TOK_ID ExtendsOpt {
-  // FIXME Use $$ instead of new class
-  // FIXME Can there be a class inside a class?
-  //       If yes, then, use a stack instead of class_members
-  class_members = new list<Entity *>;
-  new_class = new ClassEntity($2, NULL, class_members);
-}
-TOK_OPEN_BRACE {
-  // enter_scope();
-}
-ClassBodyDecls 
-TOK_CLOSE_BRACE {
-  // leave_scope();
-  class_list->push_back(new_class);
-}
+    TOK_CLASS TOK_ID ExtendsOpt {
+        // FIXME Use $$ instead of new class
+        // FIXME Can there be a class inside a class?
+        //       If yes, then, use a stack instead of class_members
+        class_members = new list<Entity *>;
+        new ClassEntity($2, NULL, class_members);
+    }
+    TOK_OPEN_BRACE {
+        // enter_scope();
+    }
+    ClassBodyDecls TOK_CLOSE_BRACE {
+        // leave_scope();
+        bool current;
+        $$ = global_symtab->find_entity($2, CLASS_ENTITY, &current);
+    }
 ;
 
 ExtendsOpt:
@@ -148,25 +153,26 @@ ClassBodyDecl:
     | ConstructorDecl
 ;
 
-FieldDecl: Modifier Type TOK_ID DimStar TOK_SEMICOLON {
-             // TODO Fix the dimensions
-             Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, type, 0);
-             // FIXME Potential problem here
-             class_members->push_back(new_field);
-           }
+FieldDecl: 
+    Modifier Type TOK_ID DimStar TOK_SEMICOLON {
+        // TODO Fix the dimensions
+        Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, type, 0);
+        // FIXME Potential problem here
+        class_members->push_back(new_field);
+    }
 ;
+
 Modifier: VisibilityOpt StaticOpt
 ;
 
-
 VisibilityOpt : 
-TOK_PUBLIC {
-  visibility_flag = true;
-}
-| TOK_PRIVATE {
-  visibility_flag = false;
-}
-| 
+    TOK_PUBLIC {
+        visibility_flag = true;
+    }
+    | TOK_PRIVATE {
+        visibility_flag = false;
+    }
+    | 
 ;
 
 StaticOpt:
