@@ -72,7 +72,7 @@ list<Entity*>* entity_list;
 %type <float_val> TOK_FLOAT_CONST
 %type <entity_list> ClassDeclarations
 %type <stmt> Stmt OptElsePart
-%type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess
+%type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess
 %type <exprs> ArgumentListOpt CommaExprStar
 /*****
   Define the type of attribute values for grammar symbols here.
