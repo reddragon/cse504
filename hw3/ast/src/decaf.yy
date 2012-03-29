@@ -317,13 +317,13 @@ ConstructorDecl:
 /**/
 
 
-Block:	  
+Block:
     TOK_OPEN_BRACE {
         global_symtab->enter_block();
     } StmtStar TOK_CLOSE_BRACE {
         $$ = new BlockStatement($3);
         global_symtab->leave_block();
-    }
+   }
 ;
 
 StmtStar:
