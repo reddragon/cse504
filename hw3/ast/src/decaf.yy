@@ -145,8 +145,14 @@ ExtendsOpt:
 ;
 
 ClassBodyDecls:
-    ClassBodyDecls ClassBodyDecl
-    | ClassBodyDecl
+    ClassBodyDecls ClassBodyDecl {
+        $$ = $1;
+        $$->push_back($2);
+    }
+    | ClassBodyDecl {
+        $$ = new list<Entity*>;
+        $$->push_back($1);
+    }
 ;
 
 ClassBodyDecl:	
