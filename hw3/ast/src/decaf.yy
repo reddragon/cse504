@@ -376,7 +376,6 @@ FieldAccess:
     }
 ;
 
-<<<<<<< HEAD
 ArrayAccess:
     Primary TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET {
         // TODO: Check
