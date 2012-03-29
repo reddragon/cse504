@@ -79,11 +79,11 @@ list<Entity*>* entity_list;
 
 %error-verbose
 %type <string_val> TOK_ID TOK_STRING_CONST
-%type <int_val> TOK_INT_CONST Modifier StaticOpt VisibilityOpt
+%type <int_val> TOK_INT_CONST Modifier StaticOpt VisibilityOpt DimStar
 %type <float_val> TOK_FLOAT_CONST
-%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl MethodHead ExtendsOpt FormalParam Variable
-%type <entity_list> ClassDeclarations ClassBodyDecls FormalsOpt FormalParamCommaList
-%type <stmt> Stmt OptElsePart StmtExprOpt VarDecl Block StmtExpr
+%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl MethodHead ExtendsOpt Variable FormalParam
+%type <entity_list> ClassDeclarations ClassBodyDecls VariablesCommaList Variables FormalsOpt FormalParamCommaList
+%type <stmt> Stmt OptElsePart StmtExprOpt Block StmtExpr VarDecl
 %type <stmts> StmtStar
 %type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess Assignment ExprOpt
 %type <exprs> ArgumentListOpt CommaExprStar
@@ -208,7 +208,14 @@ StaticOpt:
     }
 ;
 
-VarDecl: Type Variables TOK_SEMICOLON 
+VarDecl:
+    Type Variables TOK_SEMICOLON {
+        for (list<Entity*>::iterator i = $2->begin(); 
+             i != $2->end(); ++i) {
+            ((VariableEntity*)(*i))->set_type($1);
+        }
+        $$ = new DeclStatement($2);
+    }
 ;
 
 Type:	  
@@ -226,19 +233,25 @@ Type:
     }
 ;
 
-Variables: Variable VariablesCommaList 	
+Variables:
+    Variable VariablesCommaList {
+        $2->push_front($1);
+        $$ = $2;
+    }
 ;
 
 Variable: 
     TOK_ID DimStar {
-        // FIXME Fix the dimensions
-        $$ = new VariableEntity($1, NULL, 0);
+      $$ = new VariableEntity($1, NULL, $2);
     }
 ;
 
 VariablesCommaList:
-TOK_COMMA Variable VariablesCommaList
-| 
+    TOK_COMMA Variable VariablesCommaList {
+        $3->push_front($2);
+        $$ = $3;
+    }
+    | { $$ = new list<Entity*>; }
 ;
 
 MethodDecl:
@@ -263,8 +276,7 @@ MethodHead:
 FormalsOpt:
     FormalParam FormalParamCommaList {
         $$ = $2;
-        $$->push_back($1);
-
+        $$->push_front($1);
     }
     | {
         $$ = new list<Entity*>;
@@ -281,7 +293,7 @@ FormalParam:
 FormalParamCommaList: 
     TOK_COMMA FormalParam FormalParamCommaList {
         $$ = $3;
-        $$->push_back($2);
+        $$->push_front($2);
     }
     | {
         $$ = new list<Entity*>;
@@ -547,8 +559,11 @@ DimExprPlus DimExpr
 DimExpr:  TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET
 ;
 
-DimStar:  Dim DimStar
-|
+DimStar:
+    Dim DimStar {
+        $$ = $2 + 1;
+    }
+    | { $$ = 0; }
 ;
 
 Dim:	  TOK_OPEN_SQ_BRACKET  TOK_CLOSE_SQ_BRACKET ;
