@@ -259,12 +259,12 @@ MethodDecl:
         // TODO Fix these
         formal_params = new list<Entity *>;
         //formal_params->push_back(new SkipStatement());
-        stmt_list = new list<Statement *>;
-        method_body = new BlockStatement(stmt_list);
+        //stmt_list = new list<Statement *>;
+        //method_body = new BlockStatement(stmt_list);
         //method_body = $5;
         $$ = $1;
         ((MethodEntity *)$$)->set_formal_params(formal_params);
-        ((MethodEntity *)$$)->set_method_body(method_body);
+        ((MethodEntity *)$$)->set_method_body($5);
     }
 ;
 
@@ -312,6 +312,7 @@ Block:
     TOK_OPEN_BRACE {
         // enter_block();
     } StmtStar {
+        $$ = new SkipStatement();
     } TOK_CLOSE_BRACE {
         // leave_block();
     }
