@@ -269,30 +269,50 @@ Stmt:
     TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart {
         $$ = new IfStatement($3, $5, $6); 
     }
-| TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt
-| TOK_FOR TOK_OPEN_PAREN StmtExprOpt
-TOK_SEMICOLON ExprOpt
-TOK_SEMICOLON StmtExprOpt
-TOK_CLOSE_PAREN Stmt
-
-| TOK_RETURN Expr TOK_SEMICOLON
-| Block
-| StmtExpr TOK_SEMICOLON
-| VarDecl
-| TOK_BREAK TOK_SEMICOLON
-| TOK_CONTINUE TOK_SEMICOLON
-| TOK_SEMICOLON
-| error TOK_SEMICOLON 
-/* Error production to synchronize at SEMICOLON on any parse error */
+    | TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt {
+        $$ = new WhileStatement($3, $4);
+    }
+    | TOK_FOR TOK_OPEN_PAREN StmtExprOpt
+        TOK_SEMICOLON ExprOpt
+        TOK_SEMICOLON StmtExprOpt
+        TOK_CLOSE_PAREN Stmt {
+        $$ = new ForStatement($3, $5, $7, $9);
+    }
+    | TOK_RETURN Expr TOK_SEMICOLON {
+        $$ = new ReturnStatement($1);
+    }
+    | Block {
+        $$ = $1;
+    }
+    | StmtExpr TOK_SEMICOLON {
+        $$ = $1;
+    }
+    | VarDecl {
+        $$ = $1;
+    }
+    | TOK_BREAK TOK_SEMICOLON {
+        $$ = new BreakStatement();
+    }
+    | TOK_CONTINUE TOK_SEMICOLON {
+    $$ = new ContinueStatement();
+    }
+    | TOK_SEMICOLON {
+        $$ = new SkipStatement();
+    }
+    | error TOK_SEMICOLON {
+        /* Error production to synchronize at SEMICOLON on any parse error */
+        $$ = new SkipStatement();
+    }
 ;
 
+
 OptElsePart:
-TOK_ELSE Stmt {
-  $$ = $2;
-}
-| {
-  $$ = new SkipStatement();
-}
+    TOK_ELSE Stmt {
+        $$ = $2;
+    }
+    | {
+        $$ = new SkipStatement();
+    }
 ;
 
 StmtExprOpt:
