@@ -73,7 +73,9 @@ list<Entity*>* entity_list;
 %type <float_val> TOK_FLOAT_CONST
 %type <entity> ClassDeclaration
 %type <entity_list> ClassDeclarations
+
 %type <stmt> Stmt OptElsePart
+%type <stmts> StmtStar
 %type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess
 %type <exprs> ArgumentListOpt CommaExprStar
 /*****
@@ -211,16 +213,16 @@ TOK_COMMA Variable VariablesCommaList
 ;
 
 MethodDecl:
-MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
-  // TODO Fix these
-  formal_params = new list<Entity *>;
-  //formal_params->push_back(new SkipStatement());
-  stmt_list = new list<Statement *>;
-  method_body = new BlockStatement(stmt_list);
-  //method_body = $5;
-  new_method = new MethodEntity(method_name, visibility_flag, static_flag, type, formal_params, method_body);
-  class_members->push_back(new_method);
-}
+    MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
+        // TODO Fix these
+        formal_params = new list<Entity *>;
+        //formal_params->push_back(new SkipStatement());
+        stmt_list = new list<Statement *>;
+        method_body = new BlockStatement(stmt_list);
+        //method_body = $5;
+        new_method = new MethodEntity(method_name, visibility_flag, static_flag, type, formal_params, method_body);
+        class_members->push_back(new_method);
+    }
 ;
 
 MethodHead: 
@@ -257,65 +259,99 @@ Modifier TOK_ID TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block
 
 
 Block:	  
-TOK_OPEN_BRACE {
-  // enter_block();
-} StmtStar {
-
-
-}
-TOK_CLOSE_BRACE {
-  // leave_block();
-}
+    TOK_OPEN_BRACE {
+        // enter_block();
+    } StmtStar {
+    } TOK_CLOSE_BRACE {
+        // leave_block();
+    }
 ;
 
 StmtStar:
-Stmt StmtStar 
-| 
+    Stmt StmtStar {
+        $2.push_front($1);
+        $$ = $2;
+    }
+    | {
+        $$ = new list<Statement*>();
+    }
 ;
-
 
 Stmt:
     TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart {
         $$ = new IfStatement($3, $5, $6); 
     }
-| TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt
-| TOK_FOR TOK_OPEN_PAREN StmtExprOpt
-TOK_SEMICOLON ExprOpt
-TOK_SEMICOLON StmtExprOpt
-TOK_CLOSE_PAREN Stmt
-
-| TOK_RETURN Expr TOK_SEMICOLON
-| Block
-| StmtExpr TOK_SEMICOLON
-| VarDecl
-| TOK_BREAK TOK_SEMICOLON
-| TOK_CONTINUE TOK_SEMICOLON
-| TOK_SEMICOLON
-| error TOK_SEMICOLON 
-/* Error production to synchronize at SEMICOLON on any parse error */
+    | TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt {
+        $$ = new WhileStatement($3, $4);
+    }
+    | TOK_FOR TOK_OPEN_PAREN StmtExprOpt
+        TOK_SEMICOLON ExprOpt
+        TOK_SEMICOLON StmtExprOpt
+        TOK_CLOSE_PAREN Stmt {
+        $$ = new ForStatement($3, $5, $7, $9);
+    }
+    | TOK_RETURN Expr TOK_SEMICOLON {
+        $$ = new ReturnStatement($1);
+    }
+    | Block {
+        $$ = $1;
+    }
+    | StmtExpr TOK_SEMICOLON {
+        $$ = $1;
+    }
+    | VarDecl {
+        $$ = $1;
+    }
+    | TOK_BREAK TOK_SEMICOLON {
+        $$ = new BreakStatement();
+    }
+    | TOK_CONTINUE TOK_SEMICOLON {
+    $$ = new ContinueStatement();
+    }
+    | TOK_SEMICOLON {
+        $$ = new SkipStatement();
+    }
+    | error TOK_SEMICOLON {
+        /* Error production to synchronize at SEMICOLON on any parse error */
+        $$ = new SkipStatement();
+    }
 ;
 
+
 OptElsePart:
-TOK_ELSE Stmt {
-  $$ = $2;
-}
-| {
-  $$ = new SkipStatement();
-}
+    TOK_ELSE Stmt {
+        $$ = $2;
+    }
+    | {
+        $$ = new SkipStatement();
+    }
 ;
 
 StmtExprOpt:
-StmtExpr
-|
+    StmtExpr {
+        $$ = $1;
+    }
+    | {
+        $$ = new SkipStatement();
+    }
 ;
 
 ExprOpt:
-Expr
-|
+    Expr {
+        $$ = $1;
+    }
+    | {
+        $$ = new NullExpression();
+    }
 ;
 
-StmtExpr:  Assignment
-| MethodInvocation
+StmtExpr:
+    Assignment {
+        $$ = $1;
+    }
+    | MethodInvocation {
+        $$ = $1;
+    }
 ;
 
 /**/
@@ -334,18 +370,16 @@ Primary:
         $$ = new SuperExpression();
     }
     | TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN {
-        // TODO Is this right?
-        // A: It seems about right.
         $$ = $2;
     }
     | TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
         // TODO Complete this
         // TOK_ID is a class. 
-        // Check if TOK_ID has been declared in the scope.
+        // TODO: Check if TOK_ID has been declared in the scope.
+        Entity *class_entity = NULL; // TODO: Lookup symbol table.
+        $$ = new NewInstance(class_entity, $4);
     }
     | LeftHandSide {
-        // TODO What to do here?
-        // A: Maybe set it to Expression in the rule for LeftHandSide??
         $$ = $1;
     }
     | MethodInvocation {
@@ -354,22 +388,23 @@ Primary:
 ;
 
 ArgumentListOpt: 	
-Expr CommaExprStar {
-  $2->push_back($1);
-  $$ = $2;
-}
-| {
-  $$ = new list<Expression *>;
-}
+    Expr CommaExprStar {
+        $2->push_back($1);
+        $$ = $2;
+    }
+    | {
+        $$ = new list<Expression *>;
+    }
 ;
 
-CommaExprStar: TOK_COMMA Expr CommaExprStar {
-                 $3->push_back($2);
-                 $$ = $3;
-               }
-| {
-  $$ = new list<Expression *>;
-}
+CommaExprStar:
+    TOK_COMMA Expr CommaExprStar {
+        $3->push_back($2);
+        $$ = $3;
+    }
+    | {
+        $$ = new list<Expression *>;
+    }
 ;
 
 FieldAccess:
