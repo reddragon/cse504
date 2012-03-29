@@ -13,7 +13,7 @@ extern EntityTable *global_symtab;
 //First, the constructor
 
 ClassEntity::ClassEntity(const char* name, 
-			 Entity::Entity *superclass,
+			 Entity *superclass,
 			 list<Entity*> *class_members): 
   Entity::Entity(name, CLASS_ENTITY) {
   superclass_ = superclass;
