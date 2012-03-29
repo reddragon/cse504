@@ -15,7 +15,7 @@ extern list<Entity *> *toplevel;  // list of top-level classes
 extern EntityTable *global_symtab; // global symbol table
 
 // Global Variables
-list<Entity *> *class_list, *class_members, *formal_params;
+list<Entity *> *class_list, *formal_params;
 Entity * new_method;
 char * method_name;
 Statement * method_body;
@@ -124,8 +124,7 @@ ClassDeclaration:
         // FIXME Use $$ instead of new class
         // FIXME Can there be a class inside a class?
         //       If yes, then, use a stack instead of class_members
-        class_members = new list<Entity *>;
-        new ClassEntity($2, NULL, class_members);
+        new ClassEntity($2, NULL, NULL);
     }
     TOK_OPEN_BRACE {
         // enter_scope();
@@ -134,6 +133,7 @@ ClassDeclaration:
         // leave_scope();
         bool current;
         $$ = global_symtab->find_entity($2, CLASS_ENTITY, &current);
+        ((ClassEntity*)$$)->set_class_members($7);
     }
 ;
 
@@ -164,9 +164,7 @@ ClassBodyDecl:
 FieldDecl: 
     Modifier Type TOK_ID DimStar TOK_SEMICOLON {
         // TODO Fix the dimensions
-        Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, $2, 0);
-        // FIXME Potential problem here
-        class_members->push_back(new_field);
+        $$ = new FieldEntity($3, visibility_flag, static_flag, $2, 0);
     }
 ;
 
@@ -234,7 +232,6 @@ MethodDecl:
         $$ = $1;
         ((MethodEntity *)$$)->set_formal_params(formal_params);
         ((MethodEntity *)$$)->set_method_body(method_body);
-        class_members->push_back($$);
     }
 ;
 
