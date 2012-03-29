@@ -268,9 +268,10 @@ Stmt StmtStar
 ;
 
 
-Stmt:	  TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart {
-            $$ = new IfStatement($3, $5, $6); 
-          }
+Stmt:
+    TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart {
+        $$ = new IfStatement($3, $5, $6); 
+    }
 | TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt
 | TOK_FOR TOK_OPEN_PAREN StmtExprOpt
 TOK_SEMICOLON ExprOpt
@@ -316,33 +317,35 @@ StmtExpr:  Assignment
 /**/
 
 
-Primary:  Literal {
-            $$ = $1;
-          }
-| TOK_THIS {
-  $$ = new ThisExpression();
-}
-| TOK_SUPER {
-  $$ = new SuperExpression();
-}
-| TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN {
-  // TODO Is this right?
-  // A: It seems about right.
-  $$ = $2;
-}
-| TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
-  // TODO Complete this
-  // TOK_ID is a class. 
-  // Check if TOK_ID has been declared in the scope.
-}
-| LeftHandSide {
-  // TODO What to do here?
-  // A: Maybe set it to Expression in the rule for LeftHandSide??
-  $$ = $1;
-}
-| MethodInvocation {
-  $$ = $1;
-}
+Primary:  
+    Literal {
+        $$ = $1;
+    }
+    | TOK_THIS {
+        $$ = new ThisExpression();
+    }
+    | TOK_SUPER {
+        $$ = new SuperExpression();
+    }
+    | TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN {
+        // TODO Is this right?
+        // A: It seems about right.
+        $$ = $2;
+    }
+    | TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
+        // TODO Complete this
+        // TOK_ID is a class. 
+        // Check if TOK_ID has been declared in the scope.
+    }
+    | LeftHandSide {
+        // TODO What to do here?
+        // A: Maybe set it to Expression in the rule for LeftHandSide??
+        $$ = $1;
+    }
+    | MethodInvocation {
+        $$ = $1;
+    }
+;
 
 ArgumentListOpt: 	
 Expr CommaExprStar {
@@ -364,82 +367,89 @@ CommaExprStar: TOK_COMMA Expr CommaExprStar {
 ;
 
 FieldAccess:
-Primary TOK_DOT TOK_ID {
-  // TODO
-  $$ = new FieldAccess($1, $3);
-}
-| TOK_ID {
-  // TODO: How to handle this case?
-}
+    Primary TOK_DOT TOK_ID {
+        $$ = new FieldAccess($1, $3);
+    }
+    | TOK_ID {
+        // TODO: Is this correct?
+        $$ = new FieldAccess(new NullExpression(), $1);
+    }
 ;
 
-ArrayAccess: Primary TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET {
-    // TODO: Check
-    $$ = new ArrayAccess($1, $3);
-}
+<<<<<<< HEAD
+ArrayAccess:
+    Primary TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET {
+        // TODO: Check
+        $$ = new ArrayAccess($1, $3);
+    }
 ;
 
 MethodInvocation:
-Primary TOK_DOT TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
-  $$ = new MethodInvocation($1, $3, $5);
-}
-|
-TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
-    // TODO Fill this up
-    $$ = new MethodInvocation(new ThisExpression(), $1, $3);
-}
+    Primary TOK_DOT TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
+        $$ = new MethodInvocation($1, $3, $5);
+    }
+    |
+    TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
+        // TODO Fill this up
+        $$ = new MethodInvocation(new ThisExpression(), $1, $3);
+    }
 ;
 
-Expr:	  Expr TOK_MULTIPLY Expr {
-            $$ = new BinaryExpression(MUL, $1, $3);
-          }
-| Expr TOK_DIVIDE Expr {
-  $$ = new BinaryExpression(DIV, $1, $3);
-}
-| Expr TOK_PLUS Expr {
-  $$ = new BinaryExpression(ADD, $1, $3);
-}
-| Expr TOK_MINUS Expr {
-  $$ = new BinaryExpression(SUB, $1, $3);
-}
-| Expr TOK_AND Expr {
-  $$ = new BinaryExpression(AND, $1, $3);
-}
-| Expr TOK_OR Expr {
-  $$ = new BinaryExpression(OR, $1, $3);
-}
-| Expr TOK_EQUAL_EQUAL Expr {
-  $$ = new BinaryExpression(EQ, $1, $3);
-}
-| Expr TOK_NOT_EQUAL Expr {
-  $$ = new BinaryExpression(NEQ, $1, $3);
-}
-| Expr TOK_LESSER Expr {
-  $$ = new BinaryExpression(LT, $1, $3);
-}
-| Expr TOK_GREATER Expr {
-  $$ = new BinaryExpression(GT, $1, $3);
-}
-| Expr TOK_LESSER_OR_EQUAL Expr	{
-  $$ = new BinaryExpression(LEQ, $1, $3);
-}
-| Expr TOK_GREATER_OR_EQUAL Expr {
-  $$ = new BinaryExpression(GEQ, $1, $3);
-}
-| TOK_MINUS Expr	%prec TOK_NOT {
-  $$ = new UnaryExpression(UMINUS, $2);
-}
-| TOK_PLUS Expr		%prec TOK_NOT	 {
-  $$ = $2;
-}
-| TOK_NOT Expr {
-  $$ = new UnaryExpression(NEG, $2);
-}
-| Primary {
-  $$ = $1;
-}
-| Assignment
-| TOK_NEW Type DimExprPlus DimStar 
+Expr:	  
+    Expr TOK_MULTIPLY Expr {
+        $$ = new BinaryExpression(MUL, $1, $3);
+    }
+    | Expr TOK_DIVIDE Expr {
+        $$ = new BinaryExpression(DIV, $1, $3);
+    }
+    | Expr TOK_PLUS Expr {
+        $$ = new BinaryExpression(ADD, $1, $3);
+    }
+    | Expr TOK_MINUS Expr {
+        $$ = new BinaryExpression(SUB, $1, $3);
+    }
+    | Expr TOK_AND Expr {
+        $$ = new BinaryExpression(AND, $1, $3);
+    }
+    | Expr TOK_OR Expr {
+        $$ = new BinaryExpression(OR, $1, $3);
+    }
+    | Expr TOK_EQUAL_EQUAL Expr {
+        $$ = new BinaryExpression(EQ, $1, $3);
+    }
+    | Expr TOK_NOT_EQUAL Expr {
+        $$ = new BinaryExpression(NEQ, $1, $3);
+    }
+    | Expr TOK_LESSER Expr {
+        $$ = new BinaryExpression(LT, $1, $3);
+    }
+    | Expr TOK_GREATER Expr {
+        $$ = new BinaryExpression(GT, $1, $3);
+    }
+    | Expr TOK_LESSER_OR_EQUAL Expr	{
+        $$ = new BinaryExpression(LEQ, $1, $3);
+    }
+    | Expr TOK_GREATER_OR_EQUAL Expr {
+        $$ = new BinaryExpression(GEQ, $1, $3);
+    }
+    | TOK_MINUS Expr	%prec TOK_NOT {
+        $$ = new UnaryExpression(UMINUS, $2);
+    }
+    | TOK_PLUS Expr		%prec TOK_NOT	 {
+        $$ = $2;
+    }
+    | TOK_NOT Expr {
+        $$ = new UnaryExpression(NEG, $2);
+    }
+    | Primary {
+        $$ = $1;
+    }
+    | Assignment {
+        // TODO Fill this
+    }
+    | TOK_NEW Type DimExprPlus DimStar {
+        // TODO Fill this
+    }
 ;	
 
 DimExprPlus:
@@ -466,34 +476,33 @@ LeftHandSide TOK_EQUAL Expr
 ;
 
 LeftHandSide:
-FieldAccess {
-  // TODO
-}
-| ArrayAccess {
-  // TODO
-}
+    FieldAccess {
+        $$ = $1;
+    }
+    | ArrayAccess {
+        $$ = $1;
+    }
 ;
 
-Literal:  TOK_INT_CONST {
-            $$ = new IntegerConstant($1);  
-          }
-| TOK_FLOAT_CONST {
-  $$ = new FloatConstant($1);
-}
-| TOK_STRING_CONST {
-  $$ = new StringConstant($1);
-}
-| TOK_NULL {
-  $$ = new NullExpression();
-}
-| TOK_TRUE {
-  // TODO What to do here?
-  // A: new BooleanConstant(true) maybe?
-}
-| TOK_FALSE {
-  // TODO What to do here?
-  // A: new BooleanConstant(false) maybe?
-}
+Literal:  
+    TOK_INT_CONST {
+        $$ = new IntegerConstant($1);  
+    }
+    | TOK_FLOAT_CONST {
+        $$ = new FloatConstant($1);
+    }
+    | TOK_STRING_CONST {
+        $$ = new StringConstant($1);
+    }
+    | TOK_NULL {
+        $$ = new NullExpression();
+    }
+    | TOK_TRUE {
+        $$ = new BooleanConstant(true);
+    }
+    | TOK_FALSE {
+        $$ = new BooleanConstant(false);
+    }
 ;
 
 %%
