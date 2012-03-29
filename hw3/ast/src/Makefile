@@ -3,7 +3,7 @@ COMMON_DIR = ..
 include_dir = $(COMMON_DIR)/include
 objects = driver.o Symbols.o AstSymbols.o Ast.o AstPrint.o decaf.tab.o lex.yy.o 
 CXX = g++
-CXXFLAGS = -g -I$(include_dir)
+CXXFLAGS = -Wno-deprecated -g -I$(include_dir)
 includes = $(include_dir)/Ast.hh $(include_dir)/AstSymbols.hh $(include_dir)/Symbols.hh
 
 main:	$(objects) 

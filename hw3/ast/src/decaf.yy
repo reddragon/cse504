@@ -17,12 +17,11 @@ extern EntityTable *global_symtab; // global symbol table
 // Global Variables
 list<Entity *> *class_list, *class_members, *formal_params;
 Entity * new_method;
-bool visibility_flag, static_flag; 
-Type * type;
 char * method_name;
 Statement * method_body;
 stack< list<Entity *> * > block_stmts;
 list<Statement *> * stmt_list;
+bool visibility_flag, static_flag;
 %}
 
 %token TOK_BOOLEAN TOK_BREAK TOK_CLASS TOK_CONTINUE TOK_ELSE 
@@ -45,12 +44,14 @@ list<Statement *> * stmt_list;
   float float_val;
   char char_val;
   bool bool_val;
-  list<Entity*>* entity_list;
-  Statement * stmt;
-  Expression * expr; 
+  Statement* stmt;
+  Expression* expr; 
   list<Expression*>* exprs;
-  Entity * entity;
+  Entity* entity;
   list<Statement*>* stmts;
+  Type* type;
+  list<Type*>* type_list;
+  list<Entity*>* entity_list;
   /****
     Add fields to hold other types of attribute values here
 
@@ -72,13 +73,13 @@ list<Entity*>* entity_list;
 %type <string_val> TOK_ID TOK_STRING_CONST
 %type <int_val> TOK_INT_CONST
 %type <float_val> TOK_FLOAT_CONST
-%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl
+%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl MethodHead 
 %type <entity_list> ClassDeclarations ClassBodyDecls
-
 %type <stmt> Stmt OptElsePart StmtExprOpt VarDecl Block StmtExpr
 %type <stmts> StmtStar
 %type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess Assignment ExprOpt
 %type <exprs> ArgumentListOpt CommaExprStar
+%type <type> Type
 /*****
   Define the type of attribute values for grammar symbols here.
 
@@ -157,13 +158,15 @@ ClassBodyDecl:
 FieldDecl: 
     Modifier Type TOK_ID DimStar TOK_SEMICOLON {
         // TODO Fix the dimensions
-        Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, type, 0);
+        Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, $2, 0);
         // FIXME Potential problem here
         class_members->push_back(new_field);
     }
 ;
 
-Modifier: VisibilityOpt StaticOpt
+Modifier: 
+    VisibilityOpt StaticOpt {
+    }
 ;
 
 VisibilityOpt : 
@@ -181,25 +184,26 @@ StaticOpt:
         static_flag = true;
     }
     | { 
-        static_flag = false; 
+        static_flag = false;
     }
 ;
 
 VarDecl: Type Variables TOK_SEMICOLON 
 ;
 
-Type:	  TOK_INT {
-    type = new IntType();
-          }
-| TOK_FLOAT {
-    type = new FloatType();
-}
-| TOK_BOOLEAN {
-    type = new BooleanType();
-}
-| TOK_ID {
-    type = new StringType();
-}
+Type:	  
+    TOK_INT {
+        $$ = new IntType();
+    }
+    | TOK_FLOAT {
+        $$ = new FloatType();
+    }
+    | TOK_BOOLEAN {
+        $$ = new BooleanType();
+    }
+    | TOK_ID {
+        $$ = new StringType();
+    }
 ;
 
 Variables: Variable VariablesCommaList 	
@@ -221,19 +225,20 @@ MethodDecl:
         stmt_list = new list<Statement *>;
         method_body = new BlockStatement(stmt_list);
         //method_body = $5;
-        new_method = new MethodEntity(method_name, visibility_flag, static_flag, type, formal_params, method_body);
-        class_members->push_back(new_method);
+        $$ = $1;
+        ((MethodEntity *)$$)->set_formal_params(formal_params);
+        ((MethodEntity *)$$)->set_method_body(method_body);
+        class_members->push_back($$);
     }
 ;
 
 MethodHead: 
-Modifier Type TOK_ID {
-  method_name = $3;
-}
-| Modifier TOK_VOID TOK_ID {
-  method_name = $3;
-  type = new VoidType();
-}
+    Modifier Type TOK_ID {
+        $$ = new MethodEntity($3, visibility_flag, static_flag, $2, NULL, NULL);
+    }
+    | Modifier TOK_VOID TOK_ID {
+        $$ = new MethodEntity($3, visibility_flag, static_flag, new VoidType(), NULL, NULL);
+    }
 ;
 
 FormalsOpt:
@@ -513,16 +518,16 @@ Assignment:
         $$ = new AssignExpression($1, $3);
     }
     | LeftHandSide TOK_PLUS_PLUS {
-        $$ = new UnnaryExpression(POST_INCR, $1);
+        $$ = new AutoExpression(POST_INCR, $1);
     }
     | LeftHandSide TOK_MINUS_MINUS {
-        $$ = new UnnaryExpression(POST_DECR, $1);
+        $$ = new AutoExpression(POST_DECR, $1);
     }
     | TOK_PLUS_PLUS LeftHandSide {
-        $$ = new UnnaryExpression(PRE_INCR, $1);
+        $$ = new AutoExpression(PRE_INCR, $2);
     }
     | TOK_MINUS_MINUS LeftHandSide {
-        $$ = new UnnaryExpression(PRE_DECR, $1);
+        $$ = new AutoExpression(PRE_DECR, $2);
     }
 ;
 
