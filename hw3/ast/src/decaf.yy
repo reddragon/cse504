@@ -2,7 +2,8 @@
 /* vim:set ft=yy ts=4 sw=4 sts=4 cindent: */
 #include <stdio.h>
 #include <iostream>
-#include  <stack>
+#include <stack>
+#include <cassert>
 #include "Ast.hh"
 using namespace std;
 
@@ -448,7 +449,7 @@ Primary:
 
 ArgumentListOpt: 	
     Expr CommaExprStar {
-        $2->push_back($1);
+        $2->push_front($1);
         $$ = $2;
     }
     | {
@@ -472,7 +473,11 @@ FieldAccess:
     }
     | TOK_ID {
         // TODO: Is this correct?
-        $$ = new FieldAccess(new NullExpression(), $1);
+        bool current;
+        Entity * e = global_symtab->find_entity($1, VARIABLE_ENTITY, &current);
+        // TODO Replace by an error message
+        assert(e != NULL);
+        $$ = new IdExpression(e);
     }
 ;
 
