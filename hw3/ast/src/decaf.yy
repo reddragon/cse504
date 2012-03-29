@@ -506,11 +506,21 @@ Dim:	  TOK_OPEN_SQ_BRACKET  TOK_CLOSE_SQ_BRACKET ;
 
 
 Assignment:
-LeftHandSide TOK_EQUAL Expr
-| LeftHandSide TOK_PLUS_PLUS
-| LeftHandSide TOK_MINUS_MINUS
-| TOK_PLUS_PLUS LeftHandSide
-| TOK_MINUS_MINUS LeftHandSide
+    LeftHandSide TOK_EQUAL Expr {
+        $$ = new AssignExpression($1, $3);
+    }
+    | LeftHandSide TOK_PLUS_PLUS {
+        $$ = new UnnaryExpression(POST_INCR, $1);
+    }
+    | LeftHandSide TOK_MINUS_MINUS {
+        $$ = new UnnaryExpression(POST_DECR, $1);
+    }
+    | TOK_PLUS_PLUS LeftHandSide {
+        $$ = new UnnaryExpression(PRE_INCR, $1);
+    }
+    | TOK_MINUS_MINUS LeftHandSide {
+        $$ = new UnnaryExpression(PRE_DECR, $1);
+    }
 ;
 
 LeftHandSide:
