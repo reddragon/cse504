@@ -50,6 +50,7 @@ list<Statement *> * stmt_list;
   Expression * expr; 
   list<Expression*>* exprs;
   Entity * entity;
+  list<Statement*>* stmts;
   /****
     Add fields to hold other types of attribute values here
 
@@ -71,12 +72,12 @@ list<Entity*>* entity_list;
 %type <string_val> TOK_ID TOK_STRING_CONST
 %type <int_val> TOK_INT_CONST
 %type <float_val> TOK_FLOAT_CONST
-%type <entity> ClassDeclaration
-%type <entity_list> ClassDeclarations
+%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl
+%type <entity_list> ClassDeclarations ClassBodyDecls
 
-%type <stmt> Stmt OptElsePart
+%type <stmt> Stmt OptElsePart StmtExprOpt VarDecl Block StmtExpr
 %type <stmts> StmtStar
-%type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess
+%type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess Assignment ExprOpt
 %type <exprs> ArgumentListOpt CommaExprStar
 /*****
   Define the type of attribute values for grammar symbols here.
@@ -176,10 +177,12 @@ VisibilityOpt :
 ;
 
 StaticOpt:
-TOK_STATIC {
-  static_flag = true;
-}
-| { static_flag = false; }
+    TOK_STATIC {
+        static_flag = true;
+    }
+    | { 
+        static_flag = false; 
+    }
 ;
 
 VarDecl: Type Variables TOK_SEMICOLON 
@@ -267,7 +270,7 @@ Block:
 
 StmtStar:
     Stmt StmtStar {
-        $2.push_front($1);
+        $2->push_front($1);
         $$ = $2;
     }
     | {
@@ -280,7 +283,7 @@ Stmt:
         $$ = new IfStatement($3, $5, $6); 
     }
     | TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt {
-        $$ = new WhileStatement($3, $4);
+        $$ = new WhileStatement($3, $5);
     }
     | TOK_FOR TOK_OPEN_PAREN StmtExprOpt
         TOK_SEMICOLON ExprOpt
@@ -289,7 +292,7 @@ Stmt:
         $$ = new ForStatement($3, $5, $7, $9);
     }
     | TOK_RETURN Expr TOK_SEMICOLON {
-        $$ = new ReturnStatement($1);
+        $$ = new ReturnStatement($2);
     }
     | Block {
         $$ = $1;
@@ -345,10 +348,10 @@ ExprOpt:
 
 StmtExpr:
     Assignment {
-        $$ = $1;
+        $$ = new ExprStatement($1);
     }
     | MethodInvocation {
-        $$ = $1;
+        $$ = new ExprStatement($1);
     }
 ;
 
