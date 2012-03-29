@@ -81,8 +81,8 @@ list<Entity*>* entity_list;
 %type <string_val> TOK_ID TOK_STRING_CONST
 %type <int_val> TOK_INT_CONST Modifier StaticOpt VisibilityOpt
 %type <float_val> TOK_FLOAT_CONST
-%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl MethodHead ExtendsOpt
-%type <entity_list> ClassDeclarations ClassBodyDecls
+%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl MethodHead ExtendsOpt FormalParam Variable
+%type <entity_list> ClassDeclarations ClassBodyDecls FormalsOpt FormalParamCommaList
 %type <stmt> Stmt OptElsePart StmtExprOpt VarDecl Block StmtExpr
 %type <stmts> StmtStar
 %type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess Assignment ExprOpt
@@ -135,10 +135,10 @@ ClassDeclaration:
         global_symtab->enter_block();
     }
     ClassBodyDecls TOK_CLOSE_BRACE {
-        global_symtab->leave_block();
         bool current;
         $$ = global_symtab->find_entity($2, CLASS_ENTITY, &current);
         ((ClassEntity*)$$)->set_class_members($7);
+        global_symtab->leave_block();
     }
 ;
 
@@ -229,7 +229,11 @@ Type:
 Variables: Variable VariablesCommaList 	
 ;
 
-Variable: TOK_ID DimStar 
+Variable: 
+    TOK_ID DimStar {
+        // FIXME Fix the dimensions
+        $$ = new VariableEntity($1, NULL, 0);
+    }
 ;
 
 VariablesCommaList:
@@ -240,13 +244,9 @@ TOK_COMMA Variable VariablesCommaList
 MethodDecl:
     MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
         // TODO Fix these
-        formal_params = new list<Entity *>;
-        //formal_params->push_back(new SkipStatement());
-        //stmt_list = new list<Statement *>;
-        //method_body = new BlockStatement(stmt_list);
-        //method_body = $5;
+        // formal_params = new list<Entity *>;
         $$ = $1;
-        ((MethodEntity *)$$)->set_formal_params(formal_params);
+        ((MethodEntity *)$$)->set_formal_params($3);
         ((MethodEntity *)$$)->set_method_body($5);
     }
 ;
@@ -261,17 +261,31 @@ MethodHead:
 ;
 
 FormalsOpt:
-FormalParam FormalParamCommaList
-| 
+    FormalParam FormalParamCommaList {
+        $$ = $2;
+        $$->push_back($1);
+
+    }
+    | {
+        $$ = new list<Entity*>;
+    }
 ;
 
 FormalParam: 
-Type Variable
+    Type Variable {
+        $$ = $2;
+        ((VariableEntity*)$$)->set_type($1);
+    }
 ;
 
 FormalParamCommaList: 
-TOK_COMMA FormalParam FormalParamCommaList
-| 
+    TOK_COMMA FormalParam FormalParamCommaList {
+        $$ = $3;
+        $$->push_back($2);
+    }
+    | {
+        $$ = new list<Entity*>;
+    }
 ;
 
 ConstructorDecl:
@@ -293,11 +307,10 @@ ConstructorDecl:
 
 Block:	  
     TOK_OPEN_BRACE {
-        // enter_block();
-    } StmtStar {
-        $$ = new SkipStatement();
-    } TOK_CLOSE_BRACE {
-        // leave_block();
+        global_symtab->enter_block();
+    } StmtStar TOK_CLOSE_BRACE {
+        $$ = new BlockStatement($3);
+        global_symtab->leave_block();
     }
 ;
 
