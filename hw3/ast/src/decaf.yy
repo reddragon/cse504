@@ -22,6 +22,14 @@ Statement * method_body;
 stack< list<Entity *> * > block_stmts;
 list<Statement *> * stmt_list;
 bool visibility_flag, static_flag;
+
+#define VISIBILITY_PRIVATE 0
+#define VISIBILITY_PUBLIC  1
+#define STATIC_OFF         0
+#define STATIC_ON          2
+#define VISIBILITY_MASK    1
+#define STATIC_MASK        2
+
 %}
 
 %token TOK_BOOLEAN TOK_BREAK TOK_CLASS TOK_CONTINUE TOK_ELSE 
@@ -71,9 +79,9 @@ list<Entity*>* entity_list;
 
 %error-verbose
 %type <string_val> TOK_ID TOK_STRING_CONST
-%type <int_val> TOK_INT_CONST
+%type <int_val> TOK_INT_CONST Modifier StaticOpt VisibilityOpt
 %type <float_val> TOK_FLOAT_CONST
-%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl MethodHead 
+%type <entity> ClassDeclaration FieldDecl MethodDecl ConstructorDecl ClassBodyDecl MethodHead ExtendsOpt
 %type <entity_list> ClassDeclarations ClassBodyDecls
 %type <stmt> Stmt OptElsePart StmtExprOpt VarDecl Block StmtExpr
 %type <stmts> StmtStar
@@ -121,16 +129,13 @@ ClassDeclarations:
 
 ClassDeclaration:
     TOK_CLASS TOK_ID ExtendsOpt {
-        // FIXME Use $$ instead of new class
-        // FIXME Can there be a class inside a class?
-        //       If yes, then, use a stack instead of class_members
-        new ClassEntity($2, NULL, NULL);
+        new ClassEntity($2, $3, NULL);
     }
     TOK_OPEN_BRACE {
-        // enter_scope();
+        global_symtab->enter_block();
     }
     ClassBodyDecls TOK_CLOSE_BRACE {
-        // leave_scope();
+        global_symtab->leave_block();
         bool current;
         $$ = global_symtab->find_entity($2, CLASS_ENTITY, &current);
         ((ClassEntity*)$$)->set_class_members($7);
@@ -140,8 +145,14 @@ ClassDeclaration:
 ExtendsOpt:
     TOK_EXTENDS TOK_ID {
         // TODO Fill this up
+        bool current;
+        ClassEntity *c = (ClassEntity*)global_symtab->find_entity($2, CLASS_ENTITY, &current);
+        if (!c) {
+            // FIXME - Call error handling routine
+        }
+        $$ = c;
     }
-    | 
+    | { $$ = NULL }
 ;
 
 ClassBodyDecls:
@@ -164,31 +175,36 @@ ClassBodyDecl:
 FieldDecl: 
     Modifier Type TOK_ID DimStar TOK_SEMICOLON {
         // TODO Fix the dimensions
-        $$ = new FieldEntity($3, visibility_flag, static_flag, $2, 0);
+        int m = $1;
+        $$ = new FieldEntity($3, m & VISIBILITY_MASK, 
+                             m & STATIC_MASK, $2, 0);
     }
 ;
 
 Modifier: 
     VisibilityOpt StaticOpt {
+        $$ = $1 | $2;
     }
 ;
 
 VisibilityOpt : 
     TOK_PUBLIC {
-        visibility_flag = true;
+        $$ = VISIBILITY_PUBLIC;
     }
     | TOK_PRIVATE {
-        visibility_flag = false;
+        $$ = VISIBILITY_PRIVATE;
     }
-    | 
+    | {
+        $$ = VISIBILITY_PUBLIC;
+    }
 ;
 
 StaticOpt:
     TOK_STATIC {
-        static_flag = true;
+        $$ = STATIC_ON;
     }
     | { 
-        static_flag = false;
+        $$ = STATIC_OFF;
     }
 ;
 
