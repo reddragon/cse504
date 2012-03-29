@@ -150,13 +150,15 @@ ClassBodyDecl:
     | ConstructorDecl
 ;
 
-FieldDecl: Modifier Type TOK_ID DimStar TOK_SEMICOLON {
-             // TODO Fix the dimensions
-             Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, type, 0);
-             // FIXME Potential problem here
-             class_members->push_back(new_field);
-           }
+FieldDecl: 
+    Modifier Type TOK_ID DimStar TOK_SEMICOLON {
+        // TODO Fix the dimensions
+        Entity * new_field = new FieldEntity($3, visibility_flag, static_flag, type, 0);
+        // FIXME Potential problem here
+        class_members->push_back(new_field);
+    }
 ;
+
 Modifier: VisibilityOpt StaticOpt
 ;
 
