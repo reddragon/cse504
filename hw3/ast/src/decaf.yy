@@ -74,8 +74,7 @@ list<Entity*>* entity_list;
 
 %type <stmt> Stmt OptElsePart
 %type <stmts> StmtStar
-
-%type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess
+%type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess
 %type <exprs> ArgumentListOpt CommaExprStar
 /*****
   Define the type of attribute values for grammar symbols here.
