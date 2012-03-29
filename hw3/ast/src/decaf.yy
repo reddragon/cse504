@@ -483,7 +483,7 @@ Expr:
         $$ = $1;
     }
     | Assignment {
-        // TODO Fill this
+        $$ = $1;
     }
     | TOK_NEW Type DimExprPlus DimStar {
         // TODO Fill this
