@@ -1,4 +1,4 @@
-%{ /* -*-  Mode:C; c-basic-offset:8; indent-tabs-mode:nil -*- */
+%{ /* -*-  Mode:C; c-basic-offset:4; indent-tabs-mode:nil -*- */
 #include <stdio.h>
 #include <iostream>
 #include  <stack>
