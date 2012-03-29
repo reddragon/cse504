@@ -303,13 +303,7 @@ FormalParamCommaList:
 
 ConstructorDecl:
     Modifier TOK_ID TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block {
-        // FIXME Replace method_body by $6
-        // FIXME Populate formal_params correctly
-        formal_params = new list<Entity *>;
-        stmt_list = new list<Statement *>;
-        method_body = new BlockStatement(stmt_list);
-        //method_body = $5;
-        $$ = new ConstructorEntity($2, visibility_flag, formal_params, method_body);
+        $$ = new ConstructorEntity($2, visibility_flag, $4, $6);
     }
 ;
 
@@ -475,8 +469,8 @@ FieldAccess:
         // TODO: Is this correct?
         bool current;
         Entity * e = global_symtab->find_entity($1, VARIABLE_ENTITY, &current);
-        // TODO Replace by an error message
-        assert(e != NULL);
+        // FIXME Replace by an error message
+        assert(e);
         $$ = new IdExpression(e);
     }
 ;
