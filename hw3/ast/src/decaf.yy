@@ -348,22 +348,23 @@ Primary:
 ;
 
 ArgumentListOpt: 	
-Expr CommaExprStar {
-  $2->push_back($1);
-  $$ = $2;
-}
-| {
-  $$ = new list<Expression *>;
-}
+    Expr CommaExprStar {
+        $2->push_back($1);
+        $$ = $2;
+    }
+    | {
+        $$ = new list<Expression *>;
+    }
 ;
 
-CommaExprStar: TOK_COMMA Expr CommaExprStar {
-                 $3->push_back($2);
-                 $$ = $3;
-               }
-| {
-  $$ = new list<Expression *>;
-}
+CommaExprStar:
+    TOK_COMMA Expr CommaExprStar {
+        $3->push_back($2);
+        $$ = $3;
+    }
+    | {
+        $$ = new list<Expression *>;
+    }
 ;
 
 FieldAccess:
