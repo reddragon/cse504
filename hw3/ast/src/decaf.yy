@@ -251,20 +251,17 @@ Modifier TOK_ID TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block
 
 
 Block:	  
-TOK_OPEN_BRACE {
-  // enter_block();
-} StmtStar {
-
-
-}
-TOK_CLOSE_BRACE {
-  // leave_block();
-}
+    TOK_OPEN_BRACE {
+        // enter_block();
+    } StmtStar {
+    } TOK_CLOSE_BRACE {
+        // leave_block();
+    }
 ;
 
 StmtStar:
-Stmt StmtStar 
-| 
+    Stmt StmtStar 
+    | 
 ;
 
 
@@ -328,18 +325,16 @@ Primary:
         $$ = new SuperExpression();
     }
     | TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN {
-        // TODO Is this right?
-        // A: It seems about right.
         $$ = $2;
     }
     | TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
         // TODO Complete this
         // TOK_ID is a class. 
-        // Check if TOK_ID has been declared in the scope.
+        // TODO: Check if TOK_ID has been declared in the scope.
+        Entity *class_entity = NULL; // TODO: Lookup symbol table.
+        $$ = new NewInstance(class_entity, $4);
     }
     | LeftHandSide {
-        // TODO What to do here?
-        // A: Maybe set it to Expression in the rule for LeftHandSide??
         $$ = $1;
     }
     | MethodInvocation {
