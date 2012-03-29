@@ -71,7 +71,10 @@ list<Entity*>* entity_list;
 %type <int_val> TOK_INT_CONST
 %type <float_val> TOK_FLOAT_CONST
 %type <entity_list> ClassDeclarations
+
 %type <stmt> Stmt OptElsePart
+%type <stmts> StmtStar
+
 %type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess
 %type <exprs> ArgumentListOpt CommaExprStar
 /*****
@@ -260,10 +263,14 @@ Block:
 ;
 
 StmtStar:
-    Stmt StmtStar 
-    | 
+    Stmt StmtStar {
+        $2.push_front($1);
+        $$ = $2;
+    }
+    | {
+        $$ = new list<Statement*>();
+    }
 ;
-
 
 Stmt:
     TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart {
@@ -316,17 +323,30 @@ OptElsePart:
 ;
 
 StmtExprOpt:
-StmtExpr
-|
+    StmtExpr {
+        $$ = $1;
+    }
+    | {
+        $$ = new SkipStatement();
+    }
 ;
 
 ExprOpt:
-Expr
-|
+    Expr {
+        $$ = $1;
+    }
+    | {
+        $$ = new NullExpression();
+    }
 ;
 
-StmtExpr:  Assignment
-| MethodInvocation
+StmtExpr:
+    Assignment {
+        $$ = $1;
+    }
+    | MethodInvocation {
+        $$ = $1;
+    }
 ;
 
 /**/
