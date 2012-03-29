@@ -308,13 +308,14 @@ ConstructorDecl:
 /**/
 
 
-Block:	  
+Block:
     TOK_OPEN_BRACE {
         // enter_block();
     } StmtStar {
-        $$ = new SkipStatement();
+
     } TOK_CLOSE_BRACE {
         // leave_block();
+        $$ = new SkipStatement();
     }
 ;
 
