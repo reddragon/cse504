@@ -110,26 +110,29 @@ ClassDeclarations {
 ;
 
 ClassDeclarations:
-ClassDeclarations ClassDeclaration 
-| 
+    ClassDeclarations ClassDeclaration {
+        $1.push_back();
+        $$ = $1;
+    }
+    | { $$ = new list<Entity*>(); }
 ;
 
 ClassDeclaration:
-TOK_CLASS TOK_ID ExtendsOpt {
-  // FIXME Use $$ instead of new class
-  // FIXME Can there be a class inside a class?
-  //       If yes, then, use a stack instead of class_members
-  class_members = new list<Entity *>;
-  new_class = new ClassEntity($2, NULL, class_members);
-}
-TOK_OPEN_BRACE {
-  // enter_scope();
-}
-ClassBodyDecls 
-TOK_CLOSE_BRACE {
-  // leave_scope();
-  class_list->push_back(new_class);
-}
+    TOK_CLASS TOK_ID ExtendsOpt {
+        // FIXME Use $$ instead of new class
+        // FIXME Can there be a class inside a class?
+        //       If yes, then, use a stack instead of class_members
+        class_members = new list<Entity *>;
+        new_class = new ClassEntity($2, NULL, class_members);
+    }
+    TOK_OPEN_BRACE {
+        // enter_scope();
+    }
+    ClassBodyDecls 
+    TOK_CLOSE_BRACE {
+        // leave_scope();
+        class_list->push_back(new_class);
+    }
 ;
 
 ExtendsOpt:
@@ -145,9 +148,9 @@ ClassBodyDecls:
 ;
 
 ClassBodyDecl:	
-    FieldDecl
-    | MethodDecl
-    | ConstructorDecl
+    FieldDecl { $$ = $1; }
+    | MethodDecl { $$ = $1; }
+    | ConstructorDecl { $$ = $1; }
 ;
 
 FieldDecl: 
