@@ -374,7 +374,9 @@ Primary TOK_DOT TOK_ID {
 ;
 
 ArrayAccess: Primary TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET {
-             }
+    // TODO: Check
+    $$ = new ArrayAccess($1, $3);
+}
 ;
 
 MethodInvocation:
@@ -383,7 +385,8 @@ Primary TOK_DOT TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
 }
 |
 TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
-  // TODO Fill this up
+    // TODO Fill this up
+    $$ = new MethodInvocation(new ThisExpression(), $1, $3);
 }
 ;
 
