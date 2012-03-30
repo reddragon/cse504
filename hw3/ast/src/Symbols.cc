@@ -21,7 +21,6 @@ Entity::~Entity() {
 
 
 const char* Entity::name() const{
-	cerr<<"foo:"<<name_<<endl;
   return name_;
 }
 

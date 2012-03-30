@@ -5,6 +5,7 @@
 #include <stack>
 #include <cassert>
 #include <cstring>
+#include <utility>
 #include "Ast.hh"
 using namespace std;
 
@@ -17,15 +18,12 @@ extern int yylineno;
 extern list<Entity *> *toplevel;  // list of top-level classes
 extern EntityTable *global_symtab; // global symbol table
 
+typedef pair<Entity*, bool> entity_ref_t;
+
 // Global Variables
-list<Entity *> *class_list, *formal_params;
-Entity * new_method;
-char * method_name;
-Statement * method_body;
-stack< list<Entity *> * > block_stmts;
-list<Statement *> * stmt_list;
 bool visibility_flag, static_flag;
 stack<int> scope_stack;
+char error_str[2048];
 
 #define VISIBILITY_PRIVATE 0
 #define VISIBILITY_PUBLIC  1
@@ -37,6 +35,9 @@ stack<int> scope_stack;
 #define SCOPE_OTHER        1
 #define SCOPE_TRUE         4
 #define SCOPE_FALSE        5
+
+#define ENTITY  first
+#define CURRENT second
 
 void enter_block(int requester = SCOPE_TRUE) {
     if (requester == SCOPE_TRUE && 
@@ -58,13 +59,41 @@ void leave_block() {
     scope_stack.pop();
 }
 
-Entity* get_entity(Type entity_type, bool* current) {
 
-}
-
-void report_error(char* error_str) {
+void report_error() {
     cerr << error_str << endl;
     exit(1);
+}
+
+entity_ref_t find_entity(const char *name, Kind type) {
+    bool current;
+    Entity *e = global_symtab->find_entity(name, type, &current);
+    return entity_ref_t(e, current);
+}
+
+entity_ref_t find_variable(const char *name) {
+    return find_entity(name, VARIABLE_ENTITY);
+}
+
+entity_ref_t find_field(const char *name) {
+    return find_entity(name, FIELD_ENTITY);
+}
+
+entity_ref_t find_class(const char *name) {
+    return find_entity(name, CLASS_ENTITY);
+}
+
+// Searches for entities of type variable, field, class (in that
+// order).
+entity_ref_t fetch_entity(const char *name) {
+    entity_ref_t ref = find_variable(name);
+    if (!ref.ENTITY) {
+        ref = find_field(name);
+    }
+    if (!ref.ENTITY) {
+        ref = find_class(name);
+    }
+    return ref;
 }
 
 %}
@@ -166,34 +195,34 @@ ClassDeclarations:
 
 ClassDeclaration:
     TOK_CLASS TOK_ID ExtendsOpt {
-        bool current;
-        ClassEntity* c = (ClassEntity *)global_symtab->find_entity($2, CLASS_ENTITY, & current);
-        // FIXME Add error handling for duplicate class
-        assert(!c);
+        // A clas with the same name should NOT exist
+        entity_ref_t ref = find_class($2);
+        if(ref.ENTITY != NULL) {
+            sprintf(error_str, "Duplicate class %s defined at line number %d", $2, yylineno);
+            report_error();
+        }
         new ClassEntity($2, $3, NULL);
     }
     TOK_OPEN_BRACE {
         enter_block(SCOPE_OTHER);
-        // global_symtab->enter_block();
     }
     ClassBodyDecls TOK_CLOSE_BRACE {
-        bool current;
-        $$ = global_symtab->find_entity($2, CLASS_ENTITY, &current);
+        entity_ref_t ref = find_class($2);
+        $$ = ref.ENTITY;
         ((ClassEntity*)$$)->set_class_members($7);
-        // global_symtab->leave_block();
         leave_block();
     }
 ;
 
 ExtendsOpt:
     TOK_EXTENDS TOK_ID {
-        bool current;
-        ClassEntity *c = (ClassEntity*)global_symtab->find_entity($2, CLASS_ENTITY, &current);
-        if (!c) {
-            // FIXME - Call error handling routine
-            assert(false);
+        entity_ref_t ref = find_class($2);
+        if (ref.ENTITY == NULL) {
+            sprintf(error_str, "Class %s cannot be used to extend another class before it is declared, on line number %d", $2, yylineno);
+            report_error();
         }
-        $$ = c;
+        assert(ref.ENTITY != NULL);
+        $$ = ref.ENTITY;
     }
     | { $$ = NULL }
 ;
@@ -218,13 +247,16 @@ ClassBodyDecl:
 FieldDecl: 
     Modifier Type TOK_ID DimStar TOK_SEMICOLON {
         bool current;
-        FieldEntity* f = (FieldEntity *)global_symtab->find_entity($3, FIELD_ENTITY, &current);
-        // FIXME Replace with error handling code for duplicate field declaration
-        assert(!f);
-        // FIXME Fix the dimensions
-        int m = $1;
-        $$ = new FieldEntity($3, m & VISIBILITY_MASK, 
-                             m & STATIC_MASK, $2, $4);
+        entity_ref_t ref = find_field($3);
+
+        if (ref.ENTITY != NULL) {
+            sprintf(error_str, "Duplicate field %s declared at line number %d", $3, yylineno);
+            report_error();
+        }
+
+        int modifier = $1;
+        $$ = new FieldEntity($3, modifier & VISIBILITY_MASK, 
+                             modifier & STATIC_MASK, $2, $4);
     }
 ;
 
@@ -276,13 +308,12 @@ Type:
         $$ = new BooleanType();
     }
     | TOK_ID {
-        bool current;
-        ClassEntity *c = (ClassEntity*)global_symtab->find_entity($1, CLASS_ENTITY, &current);
-        if (!c) {
-            // FIXME - Call error handling routine
-            assert(false);
+        entity_ref_t ref = find_class($1);
+        if(ref.ENTITY == NULL) {
+            sprintf(error_str, "Class %s used before declaration, on line number %d", $1, yylineno);
+            report_error();
         }
-        $$ = new ClassType(c);
+        $$ = new ClassType(ref.ENTITY);
     }
 ;
 
@@ -295,12 +326,14 @@ Variables:
 
 Variable: 
     TOK_ID DimStar {
-      bool current;
-      VariableEntity* v = (VariableEntity *)global_symtab->find_entity($1, VARIABLE_ENTITY, &current);
-      // FIXME Add error handling for duplicate variable
-      //if(!(!v || (v && !current))) cout << "Variable: " << $1 << endl;
-      assert(!v || (v && !current));
-      $$ = new VariableEntity($1, NULL, $2);
+        entity_ref_t ref = find_variable($1);
+
+        if(!(!ref.ENTITY || (ref.ENTITY && !ref.CURRENT))) {
+            sprintf(error_str, "Duplicate variable %s declared on line number %d", $1, yylineno);
+            report_error();
+        }
+        
+        $$ = new VariableEntity($1, NULL, $2);
     }
 ;
 
@@ -434,10 +467,10 @@ Stmt:
     }
     | error TOK_SEMICOLON {
         /* Error production to synchronize at SEMICOLON on any parse error */
+        // TODO: yyerror()
         $$ = new SkipStatement();
     }
 ;
-
 
 OptElsePart:
     TOK_ELSE Stmt {
@@ -534,22 +567,14 @@ FieldAccess:
         $$ = new FieldAccess($1, $3);
     }
     | TOK_ID {
-        bool current = 0;
-        Entity * e = global_symtab->find_entity($1, VARIABLE_ENTITY, &current);
-        
-        if(!e) {
-            e = global_symtab->find_entity($1, FIELD_ENTITY, &current);
-        }
-        
-        if(!e) {
-            e = global_symtab->find_entity($1, CLASS_ENTITY, &current);
-        }
-        
-        if(!e) {
+        entity_ref_t ref = fetch_entity($1);
+
+        if(!ref.ENTITY) {
             $$ = new FieldAccess(new ThisExpression, $1);
         }
-        else
-            $$ = new IdExpression(e);
+        else {
+            $$ = new IdExpression(ref.ENTITY);
+        }
     }
 ;
 
