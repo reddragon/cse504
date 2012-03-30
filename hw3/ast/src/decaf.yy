@@ -10,6 +10,7 @@ using namespace std;
 // Prototypes to lexer functions
 extern void yyerror (const char *error);
 extern int  yylex ();
+extern int yylineno;
 
 // interface to the outside world
 extern list<Entity *> *toplevel;  // list of top-level classes
@@ -303,13 +304,7 @@ FormalParamCommaList:
 
 ConstructorDecl:
     Modifier TOK_ID TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block {
-        // FIXME Replace method_body by $6
-        // FIXME Populate formal_params correctly
-        formal_params = new list<Entity *>;
-        stmt_list = new list<Statement *>;
-        method_body = new BlockStatement(stmt_list);
-        //method_body = $5;
-        $$ = new ConstructorEntity($2, visibility_flag, formal_params, method_body);
+        $$ = new ConstructorEntity($2, visibility_flag, $4, $6);
     }
 ;
 
@@ -472,12 +467,22 @@ FieldAccess:
         $$ = new FieldAccess($1, $3);
     }
     | TOK_ID {
-        // TODO: Is this correct?
-        bool current;
+        bool current = 0;
         Entity * e = global_symtab->find_entity($1, VARIABLE_ENTITY, &current);
-        // TODO Replace by an error message
-        assert(e != NULL);
-        $$ = new IdExpression(e);
+        
+        if(!e) {
+            e = global_symtab->find_entity($1, FIELD_ENTITY, &current);
+        }
+        
+        if(!e) {
+            e = global_symtab->find_entity($1, CLASS_ENTITY, &current);
+        }
+        
+        if(!e) {
+            $$ = new FieldAccess(new ThisExpression, $1);
+        }
+        else
+            $$ = new IdExpression(e);
     }
 ;
 
