@@ -133,11 +133,14 @@ void MethodEntity::print() {
   print_name();
   cout << "( ";
   list<Entity*>::iterator i;
-  for(i=formal_params()->begin(); i != formal_params()->end(); i++) {
+  for(i=formal_params()->begin(); i != formal_params()->end(); ) {
     (*i)->print();
-    cout << ",";
+    i++;
+    if (i != formal_params()->end()) {
+        cout << ",";
+    }
   }
-  cout << ")" << endl;
+  cout << " )" << endl;
   if(method_body() == NULL) {
 	cout << "Problem!" << endl;
   }
