@@ -1,0 +1,14 @@
+class c1 {
+ 
+  static int i;
+ 
+  static void main() {
+        int i;
+  }
+ 
+        c1() {
+
+        int i;
+   }
+ 
+}

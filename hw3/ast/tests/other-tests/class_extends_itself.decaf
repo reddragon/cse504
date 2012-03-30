@@ -1,0 +1,4 @@
+class List1 extends List1{
+    int a;
+}
+

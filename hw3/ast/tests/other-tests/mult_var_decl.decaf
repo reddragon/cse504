@@ -1,0 +1,7 @@
+class List{
+    int a;
+    private main(){
+        int a, b, c[];
+        float f1, f2[][][][];
+    }
+}

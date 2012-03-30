@@ -1,0 +1,7 @@
+class List{
+    int a;
+}
+
+class List extends List{
+    int b;
+}

@@ -1,0 +1,22 @@
+class Decaf{
+    int d;
+    public static void main(int d, int argv[][]){
+        int a,c;
+        {
+            int a, b;
+            a = c;
+            b = a + 3;
+        }
+        a = 10;
+        int b;
+        b = a;
+    }
+    int main(){
+
+    }
+    float d;
+}
+
+class Decaf1 extends Decaf{
+    int a;
+}

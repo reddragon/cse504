@@ -1,0 +1,11 @@
+class List1{
+    int a;
+}
+
+class List2{
+    int b;
+    int main(int argc){
+        int c;
+        c = x + 10;
+    }
+}
