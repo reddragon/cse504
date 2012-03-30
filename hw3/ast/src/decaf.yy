@@ -24,6 +24,7 @@ Statement * method_body;
 stack< list<Entity *> * > block_stmts;
 list<Statement *> * stmt_list;
 bool visibility_flag, static_flag;
+stack<int> scope_stack;
 
 #define VISIBILITY_PRIVATE 0
 #define VISIBILITY_PUBLIC  1
@@ -31,6 +32,30 @@ bool visibility_flag, static_flag;
 #define STATIC_ON          2
 #define VISIBILITY_MASK    1
 #define STATIC_MASK        2
+
+#define SCOPE_OTHER        1
+#define SCOPE_TRUE         4
+#define SCOPE_FALSE        5
+
+void enter_block(int requester = SCOPE_TRUE) {
+    if (requester == SCOPE_TRUE && 
+        !scope_stack.empty() && 
+        scope_stack.top() == SCOPE_OTHER) {
+        requester = SCOPE_FALSE;
+    }
+    scope_stack.push(requester);
+    if (requester != SCOPE_FALSE) {
+        global_symtab->enter_block();
+    }
+}
+
+void leave_block() {
+    assert(!scope_stack.empty());
+    if (scope_stack.top() != SCOPE_FALSE) {
+        global_symtab->leave_block();
+    }
+    scope_stack.pop();
+}
 
 %}
 
@@ -138,13 +163,15 @@ ClassDeclaration:
         new ClassEntity($2, $3, NULL);
     }
     TOK_OPEN_BRACE {
-        global_symtab->enter_block();
+        enter_block(SCOPE_OTHER);
+        // global_symtab->enter_block();
     }
     ClassBodyDecls TOK_CLOSE_BRACE {
         bool current;
         $$ = global_symtab->find_entity($2, CLASS_ENTITY, &current);
         ((ClassEntity*)$$)->set_class_members($7);
-        global_symtab->leave_block();
+        // global_symtab->leave_block();
+        leave_block();
     }
 ;
 
@@ -270,12 +297,16 @@ VariablesCommaList:
 ;
 
 MethodDecl:
-    MethodHead TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
+    MethodHead {
+        enter_block(SCOPE_OTHER);
+    }
+    TOK_OPEN_PAREN FormalsOpt TOK_CLOSE_PAREN Block  {
         // TODO Fix these
         // formal_params = new list<Entity *>;
         $$ = $1;
-        ((MethodEntity *)$$)->set_formal_params($3);
-        ((MethodEntity *)$$)->set_method_body($5);
+        ((MethodEntity *)$$)->set_formal_params($4);
+        ((MethodEntity *)$$)->set_method_body($6);
+        leave_block();
     }
 ;
 
@@ -328,11 +359,13 @@ ConstructorDecl:
 
 Block:
     TOK_OPEN_BRACE {
-        global_symtab->enter_block();
+        // global_symtab->enter_block();
+        enter_block(SCOPE_TRUE);
     } StmtStar TOK_CLOSE_BRACE {
         $$ = new BlockStatement($3);
-        global_symtab->leave_block();
-   }
+        // global_symtab->leave_block();
+        leave_block();
+    }
 ;
 
 StmtStar:
@@ -352,11 +385,15 @@ Stmt:
     | TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt {
         $$ = new WhileStatement($3, $5);
     }
-    | TOK_FOR TOK_OPEN_PAREN StmtExprOpt
+    | TOK_FOR {
+        enter_block(SCOPE_OTHER);
+    }
+        TOK_OPEN_PAREN StmtExprOpt
         TOK_SEMICOLON ExprOpt
         TOK_SEMICOLON StmtExprOpt
         TOK_CLOSE_PAREN Stmt {
-        $$ = new ForStatement($3, $5, $7, $9);
+        $$ = new ForStatement($4, $6, $8, $10);
+        leave_block();
     }
     | TOK_RETURN Expr TOK_SEMICOLON {
         $$ = new ReturnStatement($2);
