@@ -186,6 +186,7 @@ void UnaryExpression::print() {
   case NEG: cout << "NEG"; break;
   case UMINUS: cout << "UMINUS"; break;
   }
+  cout << "(";
   arg()->print();
   cout << ")";
 }
@@ -200,6 +201,7 @@ void AutoExpression::print() {
   case PRE_DECR: cout << "PRE_DECR"; break;
   case POST_DECR: cout << "POST_DECR"; break;
   }
+  cout << "(";
   arg()->print();
   cout << ")";
 }
