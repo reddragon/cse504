@@ -267,7 +267,13 @@ Type:
         $$ = new BooleanType();
     }
     | TOK_ID {
-        $$ = new StringType();
+        bool current;
+        ClassEntity *c = (ClassEntity*)global_symtab->find_entity($1, CLASS_ENTITY, &current);
+        if (!c) {
+            // FIXME - Call error handling routine
+            assert(false);
+        }
+        $$ = new ClassType(c);
     }
 ;
 
