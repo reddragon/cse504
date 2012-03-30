@@ -58,6 +58,15 @@ void leave_block() {
     scope_stack.pop();
 }
 
+Entity* get_entity(Type entity_type, bool* current) {
+
+}
+
+void report_error(char* error_str) {
+    cerr << error_str << endl;
+    exit(1);
+}
+
 %}
 
 %token TOK_BOOLEAN TOK_BREAK TOK_CLASS TOK_CONTINUE TOK_ELSE 
