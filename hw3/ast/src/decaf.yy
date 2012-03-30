@@ -253,7 +253,6 @@ FieldDecl:
             sprintf(error_str, "Duplicate field %s declared at line number %d", $3, yylineno);
             report_error();
         }
-
         int modifier = $1;
         $$ = new FieldEntity($3, modifier & VISIBILITY_MASK, 
                              modifier & STATIC_MASK, $2, $4);
@@ -408,11 +407,9 @@ ConstructorDecl:
 
 Block:
     TOK_OPEN_BRACE {
-        // global_symtab->enter_block();
         enter_block(SCOPE_TRUE);
     } StmtStar TOK_CLOSE_BRACE {
         $$ = new BlockStatement($3);
-        // global_symtab->leave_block();
         leave_block();
     }
 ;

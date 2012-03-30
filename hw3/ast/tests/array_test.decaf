@@ -1,0 +1,17 @@
+class c1 {
+    static int arr[][][];
+    float foo() {
+        return 3.14;
+    }
+    static void main() {
+        int i, j, k;
+        k = 5;
+        arr = new int[34][k*k + 2];
+        i = arr[j][k + foo(j)][foo() * j + k];
+    }
+
+    c1() {
+        int i;
+        int arr[][];
+    }
+}
