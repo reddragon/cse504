@@ -227,7 +227,7 @@ void NewArrayInstance::print() {
 // Print method for NewInstance
 void NewInstance::print() {
   cout << "new ";
-  class_entity()->print();
+  cout << class_entity()->name();
   cout << "( ";
   list<Expression*>::iterator i;
   for(i=args()->begin(); i != args()->end();) {

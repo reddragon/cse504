@@ -485,10 +485,11 @@ Primary:
         $$ = $2;
     }
     | TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
-        // TODO Complete this
+        // FIXME Complete this
         // TOK_ID is a class. 
-        // TODO: Check if TOK_ID has been declared in the scope.
-        Entity *class_entity = NULL; // TODO: Lookup symbol table.
+        // FIXME: Check if TOK_ID has been declared in the scope.
+        Entity *class_entity = NULL; 
+        // FIXME: Lookup symbol table.
         $$ = new NewInstance(class_entity, $4);
     }
     | LeftHandSide {
