@@ -86,8 +86,8 @@ list<Entity*>* entity_list;
 %type <entity_list> ClassDeclarations ClassBodyDecls VariablesCommaList Variables FormalsOpt FormalParamCommaList
 %type <stmt> Stmt OptElsePart StmtExprOpt Block StmtExpr VarDecl
 %type <stmts> StmtStar
-%type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess Assignment ExprOpt
-%type <exprs> ArgumentListOpt CommaExprStar
+%type <expr> Expr Literal Primary MethodInvocation LeftHandSide FieldAccess ArrayAccess Assignment ExprOpt DimExpr
+%type <exprs> ArgumentListOpt CommaExprStar DimExprPlus
 %type <type> Type
 /*****
   Define the type of attribute values for grammar symbols here.
@@ -145,11 +145,11 @@ ClassDeclaration:
 
 ExtendsOpt:
     TOK_EXTENDS TOK_ID {
-        // TODO Fill this up
         bool current;
         ClassEntity *c = (ClassEntity*)global_symtab->find_entity($2, CLASS_ENTITY, &current);
         if (!c) {
             // FIXME - Call error handling routine
+            assert(false);
         }
         $$ = c;
     }
@@ -175,10 +175,10 @@ ClassBodyDecl:
 
 FieldDecl: 
     Modifier Type TOK_ID DimStar TOK_SEMICOLON {
-        // TODO Fix the dimensions
+        // FIXME Fix the dimensions
         int m = $1;
         $$ = new FieldEntity($3, m & VISIBILITY_MASK, 
-                             m & STATIC_MASK, $2, 0);
+                             m & STATIC_MASK, $2, $4);
     }
 ;
 
@@ -553,15 +553,25 @@ Expr:
     }
     | TOK_NEW Type DimExprPlus DimStar {
         // TODO Fill this
+        $$ = new NewArrayInstance($2, $3->size() + $4, $3);
     }
-;	
-
-DimExprPlus:
-DimExprPlus DimExpr
-| DimExpr
 ;
 
-DimExpr:  TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET
+DimExprPlus:
+    DimExprPlus DimExpr {
+        $$ = $1;
+        $$->push_back($2);
+    }
+    | DimExpr {
+        $$ = new list<Expression*>;
+        $$->push_back($1);
+    }
+;
+
+DimExpr:
+    TOK_OPEN_SQ_BRACKET Expr TOK_CLOSE_SQ_BRACKET {
+        $$ = $2;
+    }
 ;
 
 DimStar:
