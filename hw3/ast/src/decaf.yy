@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stack>
 #include <cassert>
+#include <cstring>
 #include "Ast.hh"
 using namespace std;
 
@@ -282,7 +283,7 @@ Variable:
       bool current;
       VariableEntity* v = (VariableEntity *)global_symtab->find_entity($1, VARIABLE_ENTITY, &current);
       // FIXME Add error handling for duplicate variable
-      if(!(!v || (v && !current))) cout << "Variable: " << $1 << endl;
+      //if(!(!v || (v && !current))) cout << "Variable: " << $1 << endl;
       assert(!v || (v && !current));
       $$ = new VariableEntity($1, NULL, $2);
     }
