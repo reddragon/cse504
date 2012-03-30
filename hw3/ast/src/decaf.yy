@@ -245,7 +245,7 @@ FieldDecl:
         entity_ref_t ref = find_field($3);
 
         // FIXME Replace with error handling code for duplicate field declaration
-        assert(ref.ENTITY != NULL);
+        assert(ref.ENTITY == NULL);
 
         int modifier = $1;
         $$ = new FieldEntity($3, modifier & VISIBILITY_MASK, 
