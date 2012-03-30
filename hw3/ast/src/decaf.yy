@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stack>
 #include <cassert>
+#include <cstring>
 #include "Ast.hh"
 using namespace std;
 
@@ -156,6 +157,10 @@ ClassDeclarations:
 
 ClassDeclaration:
     TOK_CLASS TOK_ID ExtendsOpt {
+        bool current;
+        ClassEntity* c = (ClassEntity *)global_symtab->find_entity($2, CLASS_ENTITY, & current);
+        // FIXME Add error handling for duplicate class
+        assert(!c);
         new ClassEntity($2, $3, NULL);
     }
     TOK_OPEN_BRACE {
@@ -203,6 +208,10 @@ ClassBodyDecl:
 
 FieldDecl: 
     Modifier Type TOK_ID DimStar TOK_SEMICOLON {
+        bool current;
+        FieldEntity* f = (FieldEntity *)global_symtab->find_entity($3, FIELD_ENTITY, &current);
+        // FIXME Replace with error handling code for duplicate field declaration
+        assert(!f);
         // FIXME Fix the dimensions
         int m = $1;
         $$ = new FieldEntity($3, m & VISIBILITY_MASK, 
@@ -271,6 +280,11 @@ Variables:
 
 Variable: 
     TOK_ID DimStar {
+      bool current;
+      VariableEntity* v = (VariableEntity *)global_symtab->find_entity($1, VARIABLE_ENTITY, &current);
+      // FIXME Add error handling for duplicate variable
+      //if(!(!v || (v && !current))) cout << "Variable: " << $1 << endl;
+      assert(!v || (v && !current));
       $$ = new VariableEntity($1, NULL, $2);
     }
 ;
