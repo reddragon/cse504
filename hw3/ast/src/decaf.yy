@@ -456,10 +456,10 @@ Stmt:
     }
     | error TOK_SEMICOLON {
         /* Error production to synchronize at SEMICOLON on any parse error */
+        // TODO: yyerror()
         $$ = new SkipStatement();
     }
 ;
-
 
 OptElsePart:
     TOK_ELSE Stmt {
