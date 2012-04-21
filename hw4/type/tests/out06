@@ -1,0 +1,8 @@
+Parsing...
+Typechecking...
+in06.decaf:49: Two incompatible types are used in assignment; found int, expected A_2
+in06.decaf:50: Two incompatible types are used in assignment; found int, expected B_8
+in06.decaf:51: Two incompatible types are used in assignment; found int, expected C_14
+in06.decaf:52: Two incompatible types are used in assignment; found int, expected B_8
+in06.decaf:53: Two incompatible types are used in assignment; found int, expected A_2
+Done

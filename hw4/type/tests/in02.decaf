@@ -1,0 +1,25 @@
+class List {
+	private List next;
+	public int length(){
+		if (this == null) 
+			return 0;
+		else
+			return 1 + next.length();
+	}
+}
+
+class IntList extends List {
+	private int element[];
+	public IntList(int n) {
+	   element = new int[n];
+	}
+	public int get_element() {
+		return this.element[0];
+	}
+	public int sum() {
+		if (this == null)
+			return 0;
+		else
+			return this.get_element()  + next.sum();
+	}
+}

@@ -1,0 +1,53 @@
+class Test {
+    Test()  {
+	x = 1;
+    }
+	
+    public int x;
+    public int f() {
+	return x;
+    }
+
+}
+
+class A extends Test {
+    A() {
+	x = 2;
+    }
+    private int x;
+    public A a;
+    public int g() {
+	return x;
+    }
+}
+
+class B extends A {
+    B() {
+	x = 3;
+    }
+    public int x;
+    public int h() {
+	return x;
+    }
+
+    public static void main() {
+	Test t;
+	A a;
+	B b;
+
+	int z;
+
+	t = new Test();
+	a = new A();
+	b = new B();
+
+	z = t.f();
+	z = t.x;
+
+	z = a.g();
+	z = a.x;
+
+	z = b.h();
+	z = b.x;
+    }
+}

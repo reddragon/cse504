@@ -1,0 +1,59 @@
+class A {
+      int x;
+
+      A() {
+      }
+
+      int f(int i) {
+         return 0;
+      }
+
+      int f(int i, int j) {
+         return new A();
+      }
+
+      int f(int i, A a) {
+         return i;
+      }
+
+      int f(A a, A b) {
+         return 0;
+      }
+}
+
+class B extends A {
+      int y;
+
+      B() {
+      }
+
+      B  f(B a,  B b) {
+         return new A();
+      }
+}
+
+class Test {
+      int x;
+      int y;
+      int z;
+      int a[];
+      int b[][];
+
+      Test() {
+          x = 1;
+	  a = new int[10];
+	  b = a;
+	  y = a+1;
+      }
+
+      int f() {
+         A a;
+         B b;
+         a = new A();
+	 b = new B();
+         this.x = a.f(a,a);
+	 this.y = b.f(a,a);
+	 this.z = b.f(b,b);
+      }
+}
+

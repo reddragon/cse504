@@ -1,0 +1,56 @@
+class A {
+      int x;
+
+      A() {
+      }
+
+      A f(A a, A b) {
+         return new A();
+      }
+}
+
+class B extends A {
+      int y;
+
+      B() {
+      }
+
+      B  f(A a,  B b) {
+         return new B();
+      }
+}
+
+class C extends B {
+      int z;
+
+      C() {
+      }
+
+      C  f(C a,  C b) {
+         return new C();
+      }
+}
+
+class Test {
+      int x;
+      int y;
+      int z;
+      Test() {
+      }
+
+      int f() {
+         A a;
+         B b;
+	 C c;
+         a = new A();
+	 b = new B();
+	 c = new C();
+
+         this.x = a.f(a,a);
+	 this.y = b.f(b,b);
+	 this.z = c.f(c,c);
+	 this.z = c.f(b,c);
+	 this.z = c.f(c,a);
+      }
+}
+

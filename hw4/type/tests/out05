@@ -1,0 +1,8 @@
+Parsing...
+Typechecking...
+in05.decaf:12: Return type incompatible with the declared type; found A_2, expected int
+in05.decaf:31: Return type incompatible with the declared type; found A_2, expected B_16
+in05.decaf:45: Two incompatible types are used in assignment; found int[][], expected int[]
+in05.decaf:46: Integer/floating point type expected; found: int[]
+in05.decaf:56: Two incompatible types are used in assignment; found int, expected B_16
+Done
