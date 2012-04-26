@@ -18,6 +18,13 @@ bool isNumericType(Type* t) {
     return isOfType(t, INT_TYPE) || isOfType(t, FLOAT_TYPE);
 }
 
+bool isBooleanType(Type *t) {
+    return isOfType(t, BOOLEAN_TYPE);
+}
+
+bool isStringType(Type *t) {
+    return isOfType(t, STRING_TYPE);
+}
 
 void ClassEntity::typecheck() {
     list<Entity *>::iterator it = this->class_members()->begin();
