@@ -116,40 +116,40 @@ void ReturnStatement::typecheck() {
 
 // Typecheck method for BlockStatement
 void BlockStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    list<Statement *>::iterator it = this->stmt_list()->begin();
+    for(; it != this->stmt_list()->end(); it++) 
+        (*it)->typecheck();
 }
 
 // Typecheck method for ExprStatement
 void ExprStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    this->expr()->typeinfer();
 }
-
-
 
 // Typecheck method for DeclStatement
 void DeclStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    // Nothing to be done here
 }
 
 
 
 // Typecheck method for BreakStatement
 void BreakStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    // Nothing to be done here
 }
 
 
 
 // Typecheck method for ContinueStatement
 void ContinueStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    // Nothing to be done here
 }
 
 
 
 // Typecheck method for SkipStatement
 void SkipStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    //  Nothing to be done here
 }
 
 
