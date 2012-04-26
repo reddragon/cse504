@@ -6,12 +6,19 @@
 extern Error *error;
 extern ClassEntity *objectclass;
 
+MethodEntity *current_method = NULL;
+
 void initialize_typechecker() {
   // initialize any needed variables here...
+    current_method = NULL;
 }
 
 bool isOfType(Type *t, TypeKind k) {
     return (t->kind() == k);
+}
+
+bool areSameTypes(Types *t1, Types *t2) {
+    return t1->kind() == t2->kind();
 }
 
 bool isNumericType(Type* t) {
@@ -45,11 +52,13 @@ void ClassEntity::typecheck() {
 }
 
 void MethodEntity::typecheck() {
-    return this->method_body()->typecheck();
+    current_method = this;
+    this->method_body()->typecheck();
+    current_method = NULL;
 }
 
 void ConstructorEntity::typecheck() {
-    return this->constructor_body()->typecheck();
+    this->constructor_body()->typecheck();
 }
 
 // Typecheck method for IfStatement
@@ -92,7 +101,16 @@ void ForStatement::typecheck() {
 
 // Typecheck method for ReturnStatement
 void ReturnStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    if (!current_method) {
+        error->syntax_error(this->lineno(), "Return statement not in a function");
+        return;
+    }
+
+    Type *expr = this->expr()->typeinfer();
+
+    if (!areSameTypes(expr, current_method->return_type()) && !isErrorType(guard)) {
+        error->type_error(this->lineno(), "Return type of function and return statement do NOT match. Got", expr);
+    }
 }
 
 
