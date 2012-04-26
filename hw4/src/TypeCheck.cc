@@ -152,6 +152,7 @@ Type* BinaryExpression::typeinfer() {
 Type* AssignExpression::typeinfer() {
     Type* lhs_type = this->lhs()->typeinfer();
     Type* rhs_type = this->rhs()->typeinfer();
+    // TODO: Remove assertion and replace with an actual error.
     assert(lhs_type->isSubtypeOf(rhs_type))
     // TODO - Fix this
     // Return a type of the same kind as rhs_type
@@ -164,6 +165,7 @@ Type* AssignExpression::typeinfer() {
 Type* ArrayAccess::typeinfer() {
     Type* base_type = this->base()->typeinfer();
     Type* idx_type = this->idx()->typeinfer();
+    // TODO: Remove assertion and replace with an actual error.
     assert(isOfType(base_type, ARRAY_TYPE));
     assert(isOfType(idx_type, INT_TYPE));
     // TODO - Fix this
@@ -192,9 +194,11 @@ Type* UnaryExpression::typeinfer() {
     Type* type = this->arg()->typeinfer();
     switch (this->unary_operator()) {
         case NEG:
+            // TODO: Remove assertion and replace with an actual error.
             assert(isOfType(type, BOOLEAN_TYPE));
             return new BooleanType();
         case UMINUS:
+            // TODO: Remove assertion and replace with an actual error.
             assert(isNumericType(type));
             // TODO Fix this
             // Return a type of the same kind as type
@@ -207,9 +211,10 @@ Type* UnaryExpression::typeinfer() {
 
 // Typeinfer method for AutoExpression
 Type* AutoExpression::typeinfer() {
-   Type* type = this->arg()->typeinfer();
-   assert(isOfType(type, INT_TYPE));
-   return new IntType();
+    Type* type = this->arg()->typeinfer();
+    // TODO: Remove assertion and replace with an actual error.
+    assert(isOfType(type, INT_TYPE));
+    return new IntType();
 }
 
 // Typeinfer method for NewArrayInstance: 
