@@ -45,7 +45,7 @@ void MethodEntity::typecheck() {
 }
 
 void ConstructorEntity::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    return this->constructor_body()->typecheck();
 }
 
 // Typecheck method for IfStatement
