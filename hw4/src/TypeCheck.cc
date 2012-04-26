@@ -41,7 +41,7 @@ void ClassEntity::typecheck() {
 }
 
 void MethodEntity::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    return this->method_body()->typecheck();
 }
 
 void ConstructorEntity::typecheck() {
@@ -135,7 +135,7 @@ Type* BinaryExpression::typeinfer() {
         
         case EQ:
         case NEQ:
-            assert(lhs_type->isSubtypeOf(rhs_type))
+            assert(lhs_type->isSubtypeOf(rhs_type));
             return new BooleanType();
 
         case AND:
@@ -153,9 +153,7 @@ Type* AssignExpression::typeinfer() {
     Type* lhs_type = this->lhs()->typeinfer();
     Type* rhs_type = this->rhs()->typeinfer();
     // TODO: Remove assertion and replace with an actual error.
-    assert(lhs_type->isSubtypeOf(rhs_type))
-    // TODO - Fix this
-    // Return a type of the same kind as rhs_type
+    assert(lhs_type->isSubtypeOf(rhs_type));
     return rhs_type;
 }
 
@@ -168,8 +166,6 @@ Type* ArrayAccess::typeinfer() {
     // TODO: Remove assertion and replace with an actual error.
     assert(isOfType(base_type, ARRAY_TYPE));
     assert(isOfType(idx_type, INT_TYPE));
-    // TODO - Fix this
-    // Return a type of the same kind as element_type
     ArrayType* array = (ArrayType *)this->base()->typeinfer();
     return array->elementtype();
 }
@@ -200,8 +196,6 @@ Type* UnaryExpression::typeinfer() {
         case UMINUS:
             // TODO: Remove assertion and replace with an actual error.
             assert(isNumericType(type));
-            // TODO Fix this
-            // Return a type of the same kind as type
             return type;
     }
     return(new ErrorType());
