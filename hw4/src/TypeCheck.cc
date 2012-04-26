@@ -273,36 +273,31 @@ Type* IdExpression::typeinfer() {
 
 // Typeinfer method for NullExpression
 Type* NullExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new NullType();
 }
 
 
 // Typeinfer method for BooleanConstant
 Type* BooleanConstant::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new BooleanType();
 }
 
 // Typeinfer method for IntegerConstant
 Type* IntegerConstant::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new IntType();
 }
 
 
 
 // Typeinfer method for FloatConstant
 Type* FloatConstant::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new FloatType();
 }
 
 
 // Typeinfer method for StringConstant
 Type* StringConstant::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new StringType();
 }
 
 
