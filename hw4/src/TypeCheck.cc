@@ -26,6 +26,10 @@ bool isStringType(Type *t) {
     return isOfType(t, STRING_TYPE);
 }
 
+bool isErrorType(Type *t) {
+    return isOfType(t, ERROR_TYPE);
+}
+
 void ClassEntity::typecheck() {
     list<Entity *>::iterator it = this->class_members()->begin();
     for (; it != this->class_members()->end(); it++) {
@@ -50,19 +54,40 @@ void ConstructorEntity::typecheck() {
 
 // Typecheck method for IfStatement
 void IfStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    Type* expr = this->expr()->typeinfer();
+
+    if (!isBooleanType(expr) && !isErrorType(expr)) {
+        error->type_error(this->lineno(), "Expected BOOLEAN", expr);
+    }
+
+    this->thenpart()->typecheck();
+    this->elsepart()->typecheck();
 }
 
 // Typecheck method for WhileStatement
 void WhileStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    Type* expr = this->expr()->typeinfer();
+
+    if (!isBooleanType(expr) && !isErrorType(expr)) {
+        error->type_error(this->lineno(), "Expected BOOLEAN", expr);
+    }
+
+    this->body()->typecheck();
 }
 
 
 
 // Typecheck method for ForStatement
 void ForStatement::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    Type* guard = this->guard()->typeinfer();
+
+    if (!isBooleanType(guard) && !isErrorType(guard)) {
+        error->type_error(this->lineno(), "Expected BOOLEAN", guard);
+    }
+
+    this->init()->typecheck();
+    this->update()->typecheck();
+    this->body()->typecheck();
 }
 
 // Typecheck method for ReturnStatement
