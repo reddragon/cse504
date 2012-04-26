@@ -113,6 +113,7 @@ Type* BinaryExpression::typeinfer() {
         case SUB:
         case MUL:
         case DIV:
+            // TODO: Remove assertion and replace with an actual error.
             assert(isNumericType(lhs_type) && isNumericType(rhs_type));
             if (isOfType(lhs_type, FLOAT_TYPE) || isOfType(rhs_type, FLOAT_TYPE))
                 return new FloatType();
