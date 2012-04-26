@@ -1,6 +1,7 @@
-#include<iostream>
+#include <iostream>
 #include "Ast.hh"
 #include "Error.hh"
+#include <cassert>
 
 extern Error *error;
 extern ClassEntity *objectclass;
@@ -87,8 +88,38 @@ void SkipStatement::typecheck() {
 
 // Typeinfer method for BinaryExpression
 Type* BinaryExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    TypeKind lhs_type = this->lhs()->typeinfer()->kind();
+    TypeKind rhs_type = this->rhs()->typeinfer()->kind();
+    switch (this->binary_operator()) {
+        case ADD:
+        case SUB:
+        case MUL:
+        case DIV:
+            assert(lhs_type == INT_TYPE || lhs_type == FLOAT_TYPE);
+            assert(rhs_type == INT_TYPE || rhs_type == FLOAT_TYPE);
+            if (lhs_type == FLOAT_TYPE || rhs_type == FLOAT_TYPE)
+                return new FloatType();
+            return new IntType();
+
+        case LT:
+        case LEQ:
+        case GT:
+        case GEQ:
+            assert(lhs_type == INT_TYPE || lhs_type == FLOAT_TYPE);
+            assert(rhs_type == INT_TYPE || rhs_type == FLOAT_TYPE);
+            return new BooleanType();
+        
+        case EQ:
+        case NEQ:
+            // TODO
+            break;
+
+        case AND:
+        case OR:
+            assert(lhs_type == BOOLEAN_TYPE && rhs_type == BOOLEAN_TYPE);
+            return new BooleanType();
+    }
+    return(new ErrorType());
 }
 
 

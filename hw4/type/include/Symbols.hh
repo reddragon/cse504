@@ -5,6 +5,8 @@
 
 #include <list>
 #include <ext/hash_map>
+#include <cstring>
+#include <cstdio>
 
 using namespace std;
 using namespace __gnu_cxx;
