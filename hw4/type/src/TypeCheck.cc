@@ -10,9 +10,27 @@ void initialize_typechecker() {
   // initialize any needed variables here...
 }
 
+bool isOfType(Type *t, TypeKind k) {
+    return (t->kind() == k);
+}
+
+bool isNumericType(Type* t) {
+    return isOfType(t, INT_TYPE) || isOfType(t, FLOAT_TYPE);
+}
+
 
 void ClassEntity::typecheck() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
+    list<Entity *>::iterator it = this->class_members()->begin();
+    for (; it != this->class_members()->end(); it++) {
+        switch ((*it)->kind()) {
+            case METHOD_ENTITY:
+                ((MethodEntity*)(*it))->typecheck();
+                break;
+            case CONSTRUCTOR_ENTITY:
+                ((ConstructorEntity*)(*it))->typecheck();
+                break;
+        }
+    }
 }
 
 void MethodEntity::typecheck() {
@@ -88,16 +106,15 @@ void SkipStatement::typecheck() {
 
 // Typeinfer method for BinaryExpression
 Type* BinaryExpression::typeinfer() {
-    TypeKind lhs_type = this->lhs()->typeinfer()->kind();
-    TypeKind rhs_type = this->rhs()->typeinfer()->kind();
+    Type* lhs_type = this->lhs()->typeinfer();
+    Type* rhs_type = this->rhs()->typeinfer();
     switch (this->binary_operator()) {
         case ADD:
         case SUB:
         case MUL:
         case DIV:
-            assert(lhs_type == INT_TYPE || lhs_type == FLOAT_TYPE);
-            assert(rhs_type == INT_TYPE || rhs_type == FLOAT_TYPE);
-            if (lhs_type == FLOAT_TYPE || rhs_type == FLOAT_TYPE)
+            assert(isNumericType(lhs_type) && isNumericType(rhs_type));
+            if (isOfType(lhs_type, FLOAT_TYPE) || isOfType(rhs_type, FLOAT_TYPE))
                 return new FloatType();
             return new IntType();
 
@@ -105,8 +122,7 @@ Type* BinaryExpression::typeinfer() {
         case LEQ:
         case GT:
         case GEQ:
-            assert(lhs_type == INT_TYPE || lhs_type == FLOAT_TYPE);
-            assert(rhs_type == INT_TYPE || rhs_type == FLOAT_TYPE);
+            assert(isNumericType(lhs_type) && isNumericType(rhs_type));
             return new BooleanType();
         
         case EQ:
@@ -116,7 +132,7 @@ Type* BinaryExpression::typeinfer() {
 
         case AND:
         case OR:
-            assert(lhs_type == BOOLEAN_TYPE && rhs_type == BOOLEAN_TYPE);
+            assert(isOfType(lhs_type, BOOLEAN_TYPE) && isOfType(rhs_type, BOOLEAN_TYPE));
             return new BooleanType();
     }
     return(new ErrorType());
@@ -126,16 +142,27 @@ Type* BinaryExpression::typeinfer() {
 
 // Typeinfer method for AssignExpression
 Type* AssignExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    Type* lhs_type = this->lhs()->typeinfer();
+    Type* rhs_type = this->rhs()->typeinfer();
+    if (!lhs_type->isSubtypeOf(rhs_type))
+        return(new ErrorType());
+    // TODO - Fix this
+    // Return a type of the same kind as rhs_type
+    return rhs_type;
 }
 
 
 
 // Typeinfer method for ArrayAccess
 Type* ArrayAccess::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    Type* base_type = this->base()->typeinfer();
+    Type* idx_type = this->idx()->typeinfer();
+    assert(isOfType(base_type, ARRAY_TYPE));
+    assert(isOfType(idx_type, INT_TYPE));
+    // TODO - Fix this
+    // Return a type of the same kind as element_type
+    ArrayType* array = (ArrayType *)this->base()->typeinfer();
+    return array->elementtype();
 }
 
 
@@ -155,16 +182,27 @@ Type* MethodInvocation::typeinfer() {
 
 // Typeinfer method for UnaryExpression
 Type* UnaryExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    Type* type = this->arg()->typeinfer();
+    switch (this->unary_operator()) {
+        case NEG:
+            assert(isOfType(type, BOOLEAN_TYPE));
+            return new BooleanType();
+        case UMINUS:
+            assert(isNumericType(type));
+            // TODO Fix this
+            // Return a type of the same kind as type
+            return type;
+    }
+    return(new ErrorType());
 }
 
 
 
 // Typeinfer method for AutoExpression
 Type* AutoExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+   Type* type = this->arg()->typeinfer();
+   assert(isOfType(type, INT_TYPE));
+   return new IntType();
 }
 
 // Typeinfer method for NewArrayInstance: 
