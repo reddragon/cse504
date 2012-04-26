@@ -127,8 +127,8 @@ Type* BinaryExpression::typeinfer() {
         
         case EQ:
         case NEQ:
-            // TODO
-            break;
+            assert(lhs_type->isSubtypeOf(rhs_type))
+            return new BooleanType();
 
         case AND:
         case OR:
@@ -144,8 +144,7 @@ Type* BinaryExpression::typeinfer() {
 Type* AssignExpression::typeinfer() {
     Type* lhs_type = this->lhs()->typeinfer();
     Type* rhs_type = this->rhs()->typeinfer();
-    if (!lhs_type->isSubtypeOf(rhs_type))
-        return(new ErrorType());
+    assert(lhs_type->isSubtypeOf(rhs_type))
     // TODO - Fix this
     // Return a type of the same kind as rhs_type
     return rhs_type;
