@@ -18,6 +18,13 @@ bool isNumericType(Type* t) {
     return isOfType(t, INT_TYPE) || isOfType(t, FLOAT_TYPE);
 }
 
+bool isBooleanType(Type *t) {
+    return isOfType(t, BOOLEAN_TYPE);
+}
+
+bool isStringType(Type *t) {
+    return isOfType(t, STRING_TYPE);
+}
 
 void ClassEntity::typecheck() {
     list<Entity *>::iterator it = this->class_members()->begin();
@@ -113,6 +120,7 @@ Type* BinaryExpression::typeinfer() {
         case SUB:
         case MUL:
         case DIV:
+            // TODO: Remove assertion and replace with an actual error.
             assert(isNumericType(lhs_type) && isNumericType(rhs_type));
             if (isOfType(lhs_type, FLOAT_TYPE) || isOfType(rhs_type, FLOAT_TYPE))
                 return new FloatType();
