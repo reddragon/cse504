@@ -7,10 +7,14 @@ extern Error *error;
 extern ClassEntity *objectclass;
 
 MethodEntity *current_method = NULL;
+ConstructorEntity *current_constructor = NULL;
+ClassEntity *current_class = NULL;
 
 void initialize_typechecker() {
   // initialize any needed variables here...
     current_method = NULL;
+    current_constructor = NULL;
+    current_class = NULL;
 }
 
 bool isOfType(Type *t, TypeKind k) {
@@ -19,6 +23,10 @@ bool isOfType(Type *t, TypeKind k) {
 
 bool areSameTypes(Types *t1, Types *t2) {
     return t1->kind() == t2->kind();
+}
+
+bool isIntegerType(Type* t) {
+    return isOfType(t, INT_TYPE);
 }
 
 bool isNumericType(Type* t) {
@@ -38,6 +46,7 @@ bool isErrorType(Type *t) {
 }
 
 void ClassEntity::typecheck() {
+    current_class = this;
     list<Entity *>::iterator it = this->class_members()->begin();
     for (; it != this->class_members()->end(); it++) {
         switch ((*it)->kind()) {
@@ -49,6 +58,7 @@ void ClassEntity::typecheck() {
                 break;
         }
     }
+    current_class = NULL;
 }
 
 void MethodEntity::typecheck() {
@@ -58,7 +68,9 @@ void MethodEntity::typecheck() {
 }
 
 void ConstructorEntity::typecheck() {
+    current_constructor = this;
     this->constructor_body()->typecheck();
+    current_constructor = NULL;
 }
 
 // Typecheck method for IfStatement
@@ -256,11 +268,22 @@ Type* AutoExpression::typeinfer() {
 
 // Typeinfer method for NewArrayInstance: 
 Type* NewArrayInstance::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    for (list<Expression*>::iterator j = this->bounds->begin(); 
+         j != this->bounds->end(); ++j) {
+        if (!isIntegerType(*j)) {
+            return new ErrorType();
+        }
+    }
+
+    Type *base = new ArrayType(this->type());
+    int i = this->dimension() - 1;
+
+    while (i--) {
+        base = new ArrayType(base);
+    }
+
+    return base;
 }
-
-
 
 // Typeinfer method for NewInstance:
 Type* NewInstance::typeinfer() {
