@@ -285,7 +285,11 @@ Type* FieldAccess::typeinfer() {
     if (!is_public) {
         // Private. Check if the current method is that of the same
         // class) as the one where the field was declared.
-        if (current_class && !strcmp(pce->name(), current_class->name())) {
+        // TODO Remove this assert after testing
+        // current_class should always be set
+        assert(current_class);
+        
+        if (!strcmp(pce->name(), current_class->name())) {
             // okay
         } else {
             // "Trying to access private member " +
