@@ -75,6 +75,26 @@ bool isErrorType(Type *t) {
     return isOfType(t, ERROR_TYPE);
 }
 
+bool isValidMethodInvocation(MethodInvocation *pmi, MethodEntity *pme) {
+    if (strcmp(pmi->name(), pme->name())) {
+        return false;
+    }
+    if (pmi->args()->size() != pme->formal_params()->size()) {
+        return false;
+    }
+
+    list<Expression*>::iterator j = pmi->args()->begin();
+    for (list<Entity*>::iterator i = pme->formal_params()->begin(); 
+         i != pme->formal_params()->end(); ++i) {
+        VariableEntity *pparam = (VariableEntity*)(*i);
+        if (!pparam->type()->isSubtypeOf((*j)->typeinfer())) {
+            return false;
+        }
+        ++j;
+    }
+    return true;
+}
+
 void ClassEntity::typecheck() {
     current_class = this;
     list<Entity *>::iterator it = this->class_members()->begin();
