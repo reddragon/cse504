@@ -294,15 +294,13 @@ Type* NewInstance::typeinfer() {
 
 // Typeinfer method for ThisExpression
 Type* ThisExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new ClassType(current_class);
 }
 
 
 // Typeinfer method for SuperExpression
 Type* SuperExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new ClassType(current_class->superclass());
 }
 
 // Typeinfer method for IdExpression
