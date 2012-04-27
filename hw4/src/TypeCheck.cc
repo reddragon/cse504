@@ -268,9 +268,9 @@ Type* AutoExpression::typeinfer() {
 
 // Typeinfer method for NewArrayInstance: 
 Type* NewArrayInstance::typeinfer() {
-    for (list<Expression*>::iterator j = this->bounds->begin(); 
-         j != this->bounds->end(); ++j) {
-        if (!isIntegerType(*j)) {
+    for (list<Expression*>::iterator j = this->bounds()->begin(); 
+         j != this->bounds()->end(); ++j) {
+        if (!isIntegerType((*j)->typeinfer())) {
             return new ErrorType();
         }
     }
