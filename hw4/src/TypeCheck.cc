@@ -5,10 +5,40 @@
 
 extern Error *error;
 extern ClassEntity *objectclass;
+extern list<Entity *> *toplevel;  // list of top-level classes
+extern EntityTable *global_symtab; // global symbol table
 
 MethodEntity *current_method = NULL;
 ConstructorEntity *current_constructor = NULL;
 ClassEntity *current_class = NULL;
+
+Entity*
+lookup_entity(ClassEntity *pc, std::string name) {
+    if (pc == NULL) {
+        return NULL;
+    }
+
+    for (list<Entity*>::iterator i = pc->class_members()->begin(); 
+         i != pc->class_members()->end(); ++i) {
+        if (name == (*i)->name()) {
+            return *i;
+        }
+    }
+
+    return lookup_entity(pc->superclass(), name);
+}
+
+Entity*
+get_class_entity(const char *name) {
+    for (list<Entity*>::iterator i = toplevel->begin(); 
+         i != toplevel->end(); ++i) {
+        if (!strcmp(name, (*i)->name())) {
+            return *i;
+        }
+    }
+    return NULL;
+}
+
 
 void initialize_typechecker() {
   // initialize any needed variables here...
@@ -228,8 +258,45 @@ Type* ArrayAccess::typeinfer() {
 
 // Typeinfer method for FieldAccess:
 Type* FieldAccess::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    // Fetch the InstanceType based on this->base()
+    Type *pt = this->base()->typeinfer();
+    if (!(pt->kind() == INSTANCE_TYPE || pt->kind() == CLASS_TYPE)) {
+        // Error "Invalid base type. Excepted INSTANCE or CLASS type"
+        return new ErrorType();
+    }
+
+    ClassEntity *pce = pt->kind() == INSTANCE_TYPE ? ((InstanceType*)pt)->classtype() : ((ClassType*)pt)->classtype();
+    FieldEntity *e = (FieldEntity*)lookup_entity(pce, this->name());
+
+    bool is_public = e->visibility_flag();
+    bool is_static = e->static_flag();
+    if (!is_static) {
+        // non-static field
+
+        // Check if base is an InstanceType
+        if (pt->kind() != INSTANCE_TYPE) {
+            return new ErrorType();
+        }
+
+    } else {
+        // static field
+    }
+
+    if (!is_public) {
+        // Private. Check if the current method is that of the same
+        // class) as the one where the field was declared.
+        if (current_class && !strcmp(pce->name(), current_class->name())) {
+            // okay
+        } else {
+            // "Trying to access private member " +
+            // string(this->name()) + " of class " + pce->name()
+            return new ErrorType();
+        }
+    }
+
+    // Return the type of the field named this->name()
+    FieldEntity *pfe = (FieldEntity*)e;
+    return pfe->type();
 }
 
 // Typeinfer method for MethodInvocation
