@@ -287,6 +287,10 @@ Type* FieldAccess::typeinfer() {
 
     ClassEntity *pce = pt->kind() == INSTANCE_TYPE ? ((InstanceType*)pt)->classtype() : ((ClassType*)pt)->classtype();
     FieldEntity *e = (FieldEntity*)lookup_entity(pce, this->name());
+    
+    // TODO Replace by an error message
+    // Field 'e' not found
+    assert(e);
 
     bool is_public = e->visibility_flag();
     bool is_static = e->static_flag();
@@ -305,7 +309,11 @@ Type* FieldAccess::typeinfer() {
     if (!is_public) {
         // Private. Check if the current method is that of the same
         // class) as the one where the field was declared.
-        if (current_class && !strcmp(pce->name(), current_class->name())) {
+        // TODO Remove this assert after testing
+        // current_class should always be set
+        assert(current_class);
+        
+        if (!strcmp(pce->name(), current_class->name())) {
             // okay
         } else {
             // "Trying to access private member " +
@@ -321,8 +329,13 @@ Type* FieldAccess::typeinfer() {
 
 // Typeinfer method for MethodInvocation
 Type* MethodInvocation::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    Type *pt = this->base()->typeinfer();
+    if (!(pt->kind() == INSTANCE_TYPE || pt->kind() == CLASS_TYPE)) {
+        // Error "Invalid base type. Excepted INSTANCE or CLASS type"
+        return new ErrorType();
+    }
+
+    return(new ErrorType());
 }
 
 
