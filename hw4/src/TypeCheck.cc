@@ -21,7 +21,7 @@ bool isOfType(Type *t, TypeKind k) {
     return (t->kind() == k);
 }
 
-bool areSameTypes(Types *t1, Types *t2) {
+bool areSameTypes(Type *t1, Type *t2) {
     return t1->kind() == t2->kind();
 }
 
@@ -120,7 +120,7 @@ void ReturnStatement::typecheck() {
 
     Type *expr = this->expr()->typeinfer();
 
-    if (!areSameTypes(expr, current_method->return_type()) && !isErrorType(guard)) {
+    if (!areSameTypes(expr, current_method->return_type()) && !isErrorType(expr)) {
         error->type_error(this->lineno(), "Return type of function and return statement do NOT match. Got", expr);
     }
 }
@@ -307,43 +307,42 @@ Type* SuperExpression::typeinfer() {
 
 // Typeinfer method for IdExpression
 Type* IdExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    switch (this->id()->kind()) {
+        case CLASS_ENTITY:
+            return new ClassType((ClassEntity *)this->id());
+        case VARIABLE_ENTITY:
+            return ((VariableEntity *)(this->id()))->type();
+    }
 }
 
 
 // Typeinfer method for NullExpression
 Type* NullExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new NullType();
 }
 
 
 // Typeinfer method for BooleanConstant
 Type* BooleanConstant::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new BooleanType();
 }
 
 // Typeinfer method for IntegerConstant
 Type* IntegerConstant::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new IntType();
 }
 
 
 
 // Typeinfer method for FloatConstant
 Type* FloatConstant::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new FloatType();
 }
 
 
 // Typeinfer method for StringConstant
 Type* StringConstant::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    return new StringType();
 }
 
 
