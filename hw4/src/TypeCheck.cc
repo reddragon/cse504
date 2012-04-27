@@ -354,22 +354,27 @@ Type* NewArrayInstance::typeinfer() {
 
 // Typeinfer method for NewInstance:
 Type* NewInstance::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    
 }
 
 
 // Typeinfer method for ThisExpression
 Type* ThisExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    if (current_constructor || current_method->static_flag()) {
+        return new InstanceType(current_class);
+    }
+    else
+        return new ClassType(current_class);
 }
 
 
 // Typeinfer method for SuperExpression
 Type* SuperExpression::typeinfer() {
-   error->implementation_error("Type checking/inference not implemented (yet)\n");
-   return(new ErrorType());
+    if (current_constructor || current_method->static_flag()) {
+        return new InstanceType(current_class->superclass());
+    }
+    else
+        return new ClassType(current_class->superclass());
 }
 
 // Typeinfer method for IdExpression
