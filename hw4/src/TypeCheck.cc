@@ -117,10 +117,11 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
             if ((*i)->kind() == METHOD_ENTITY) {
                 if (isValidMethodInvocation(pmi, (MethodEntity *)*i)) {
                     
-                    // Is a private function, and,
-                    // the method we are calling it from is not
-                    // a method of the class in which it exists.
-                    if (!((MethodEntity *)(*i))->visibility_flag() && (current_class != pc)) {
+                    if (!((MethodEntity *)(*i))->visibility_flag() && 
+                        (current_class != pc)) {
+                        // Is a private function, and, the method we
+                        // are calling it from is not a method of the
+                        // class in which it exists.
                         *m = NULL;
                         return EPRIVATEACCESS;
                     }
@@ -142,8 +143,9 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
         return METHODFOUND;
     }
     
-    if (!count)
+    if (!count) {
         return lookup_method_entity(pc->superclass(), pmi, m);
+    }
 }
 
 enum NewInstanceResult { CFOUND=0, ECNOTFOUND, ECMULTIPLEDECL, ECPRIVATEACCESS };
