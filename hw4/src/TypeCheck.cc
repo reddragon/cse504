@@ -562,6 +562,7 @@ Type* NewArrayInstance::typeinfer() {
     return base;
 }
 
+
 // Typeinfer method for NewInstance:
 Type* NewInstance::typeinfer() {
     ConstructorEntity *c;
@@ -569,16 +570,13 @@ Type* NewInstance::typeinfer() {
         case CFOUND:
             return new InstanceType(this->class_entity());
         case ECNOTFOUND:
-            // TODO Set appropriate error message
-            // Error "Constructor not found"
+            error->type_error(this->lineno(), "Could not find a matching constructor for the constructor of class ", (char *)this->class_entity()->name());
             break;
         case ECMULTIPLEDECL:
-            // TODO Set appropriate error message
-            // Error "Multiple declarations of the same constructor"
+            error->type_error(this->lineno(), "Multiple declarations of constructors of the same type in the class ", (char *)this->class_entity()->name());
             break;
         case ECPRIVATEACCESS:
-            // TODO Set appropriate error message
-            // Error "Accessing a private constructor"
+            error->type_error(this->lineno(), "Invalid invocation of a private constructor of the class ", (char *)this->class_entity()->name());
             break;
     }
     return  (new ErrorType());
