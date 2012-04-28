@@ -59,7 +59,7 @@ bool isValidMethodInvocation(MethodInvocation *pmi, MethodEntity *pme) {
     for (list<Entity*>::iterator i = pme->formal_params()->begin(); 
          i != pme->formal_params()->end(); ++i) {
         VariableEntity *pparam = (VariableEntity*)(*i);
-        if (!pparam->type()->isSubtypeOf((*j)->typeinfer())) {
+        if (!(*j)->typeinfer()->isSubtypeOf(pparam->type())) {
             return false;
         }
         ++j;
@@ -76,7 +76,7 @@ bool isValidNewInstance(NewInstance* pni, ConstructorEntity* pce) {
     for (list<Entity*>::iterator i = pce->formal_params()->begin(); 
          i != pce->formal_params()->end(); ++i) {
         VariableEntity *pparam = (VariableEntity*)(*i);
-        if (!pparam->type()->isSubtypeOf((*j)->typeinfer())) {
+        if (!(*j)->typeinfer()->isSubtypeOf(pparam->type())) {
             return false;
         }
         ++j;
