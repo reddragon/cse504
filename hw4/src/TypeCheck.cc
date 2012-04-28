@@ -292,7 +292,7 @@ void ReturnStatement::typecheck() {
     ERROR_GUARD_NO_RETURN(expr);
 
     if (!expr->isSubtypeOf(current_method->return_type())) {
-        error->type_error(this->lineno(), "Return type of function and return statement do NOT match", expr);
+        error->type_error(this->lineno(), "Return type incompatible with the declared type", expr, current_method->return_type());
         return;
     }
 }
