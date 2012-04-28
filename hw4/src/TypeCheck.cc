@@ -291,7 +291,7 @@ void ReturnStatement::typecheck() {
     Type *expr = this->expr()->typeinfer();
     ERROR_GUARD_NO_RETURN(expr);
 
-    if (!current_method->return_type()->isSubtypeOf(expr)) {
+    if (!expr->isSubtypeOf(current_method->return_type())) {
         error->type_error(this->lineno(), "Return type of function and return statement do NOT match", expr);
         return;
     }
