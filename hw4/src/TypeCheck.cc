@@ -243,7 +243,8 @@ void IfStatement::typecheck() {
     ERROR_GUARD_NO_RETURN(expr);
 
     if (!isBooleanType(expr)) {
-        error->type_error(this->lineno(), "Expected BOOLEAN", expr);
+        error->type_error(this->lineno(), "Expected boolean", expr);
+        return;
     }
 
     this->thenpart()->typecheck();
@@ -256,7 +257,8 @@ void WhileStatement::typecheck() {
     ERROR_GUARD_NO_RETURN(expr);
 
     if (!isBooleanType(expr)) {
-        error->type_error(this->lineno(), "Expected BOOLEAN", expr);
+        error->type_error(this->lineno(), "Expected boolean", expr);
+        return;
     }
 
     this->body()->typecheck();
@@ -270,7 +272,8 @@ void ForStatement::typecheck() {
     ERROR_GUARD_NO_RETURN(guard);
 
     if (!isBooleanType(guard)) {
-        error->type_error(this->lineno(), "Expected BOOLEAN", guard);
+        error->type_error(this->lineno(), "Expected boolean", guard);
+        return;
     }
 
     this->init()->typecheck();
@@ -290,6 +293,7 @@ void ReturnStatement::typecheck() {
 
     if (!areSameTypes(expr, current_method->return_type())) {
         error->type_error(this->lineno(), "Return type of function and return statement do NOT match", expr);
+        return;
     }
 }
 
@@ -347,23 +351,38 @@ Type* BinaryExpression::typeinfer() {
         case SUB:
         case MUL:
         case DIV:
-            // FIXME: Remove assertion and replace with an actual error.
             // cout<<"lhs type: ";
             // lhs_type->print();
             // cout<<endl<<"rhs type: ";
             // rhs_type->print();
             // cout<<std::endl;
 
-            assert(isNumericType(lhs_type) && isNumericType(rhs_type));
-            if (isOfType(lhs_type, FLOAT_TYPE) || isOfType(rhs_type, FLOAT_TYPE))
-                return new FloatType();
-            return new IntType();
+            if (!isNumericType(lhs_type)) {
+                error->type_error(this->lineno(), "Expected int or float", lhs_type);
+                return new ErrorType;
+            }
+            if (!isNumericType(rhs_type)) {
+                error->type_error(this->lineno(), "Expected int or float", rhs_type);
+                return new ErrorType;
+            }
+
+            if (isOfType(lhs_type, FLOAT_TYPE) || isOfType(rhs_type, FLOAT_TYPE)) {
+                return new FloatType;
+            }
+            return new IntType;
 
         case LT:
         case LEQ:
         case GT:
         case GEQ:
-            assert(isNumericType(lhs_type) && isNumericType(rhs_type));
+            if (!isNumericType(lhs_type)) {
+                error->type_error(this->lineno(), "Expected int or float", lhs_type);
+                return new ErrorType;
+            }
+            if (!isNumericType(rhs_type)) {
+                error->type_error(this->lineno(), "Expected int or float", rhs_type);
+                return new ErrorType;
+            }
             return new BooleanType();
         
         case EQ:
@@ -373,9 +392,11 @@ Type* BinaryExpression::typeinfer() {
             // cout<<endl<<"rhs type: ";
             // rhs_type->print();
             // cout<<std::endl;
-            // FIXME: Replace with error
-            assert(lhs_type->isSubtypeOf(rhs_type) || rhs_type->isSubtypeOf(lhs_type));
-            return new BooleanType();
+            if (!lhs_type->isSubtypeOf(rhs_type) || rhs_type->isSubtypeOf(lhs_type)) {
+                error->type_error(this->lineno(), "Binary (in)equality", lhs_type, rhs_type);
+                return new ErrorType;
+            }
+            return new BooleanType;
 
         case AND:
         case OR:
