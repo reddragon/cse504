@@ -12,34 +12,6 @@ MethodEntity *current_method = NULL;
 ConstructorEntity *current_constructor = NULL;
 ClassEntity *current_class = NULL;
 
-Entity*
-lookup_entity(ClassEntity *pc, std::string name) {
-    if (pc == NULL) {
-        return NULL;
-    }
-
-    for (list<Entity*>::iterator i = pc->class_members()->begin(); 
-         i != pc->class_members()->end(); ++i) {
-        if (name == (*i)->name()) {
-            return *i;
-        }
-    }
-
-    return lookup_entity(pc->superclass(), name);
-}
-
-Entity*
-get_class_entity(const char *name) {
-    for (list<Entity*>::iterator i = toplevel->begin(); 
-         i != toplevel->end(); ++i) {
-        if (!strcmp(name, (*i)->name())) {
-            return *i;
-        }
-    }
-    return NULL;
-}
-
-
 void initialize_typechecker() {
   // initialize any needed variables here...
     current_method = NULL;
@@ -93,6 +65,77 @@ bool isValidMethodInvocation(MethodInvocation *pmi, MethodEntity *pme) {
         ++j;
     }
     return true;
+}
+
+
+Entity*
+lookup_entity(ClassEntity *pc, std::string name) {
+    if (pc == NULL) {
+        return NULL;
+    }
+
+    for (list<Entity*>::iterator i = pc->class_members()->begin(); 
+         i != pc->class_members()->end(); ++i) {
+        if (name == (*i)->name()) {
+            return *i;
+        }
+    }
+
+    return lookup_entity(pc->superclass(), name);
+}
+
+enum MethodInvocationResult { METHODFOUND=0, EMETHODNOTFOUND, EMULTIPLEDECL, EPRIVATEACCESS };
+
+MethodInvocationResult
+lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
+    // Method not found
+    if (pc == NULL) {
+        *m = NULL;
+        return EMETHODNOTFOUND;
+    }
+
+    int count = 0;
+    for (list<Entity*>::iterator i = pc->class_members()->begin();
+        i != pc->class_members()->end(); ++i) {
+            if ((*i)->kind() == METHOD_ENTITY) {
+                if (isValidMethodInvocation(pmi, (MethodEntity *)*i)) {
+                    
+                    // Is a private function
+                    if (!((MethodEntity *)(*i))->visibility_flag()) {
+                        *m = NULL;
+                        return EPRIVATEACCESS;
+                    }
+
+                    count = count + 1;
+                    *m = (MethodEntity*) (*i);
+                    
+                    // Multiple matching Method Invocations
+                    if (count > 1) {
+                        m = NULL;
+                        return EMULTIPLEDECL;
+                    }
+                }
+            }
+        }
+    
+    // One matching function found
+    if (count == 1) {
+        return METHODFOUND;
+    }
+    
+    if (!count)
+        return lookup_method_entity(pc->superclass(), pmi, m);
+}
+
+Entity*
+get_class_entity(const char *name) {
+    for (list<Entity*>::iterator i = toplevel->begin(); 
+         i != toplevel->end(); ++i) {
+        if (!strcmp(name, (*i)->name())) {
+            return *i;
+        }
+    }
+    return NULL;
 }
 
 void ClassEntity::typecheck() {
@@ -333,6 +376,34 @@ Type* MethodInvocation::typeinfer() {
     if (!(pt->kind() == INSTANCE_TYPE || pt->kind() == CLASS_TYPE)) {
         // Error "Invalid base type. Excepted INSTANCE or CLASS type"
         return new ErrorType();
+    }
+    
+    ClassEntity *pce = pt->kind() == INSTANCE_TYPE ? ((InstanceType*)pt)->classtype() : ((ClassType*)pt)->classtype();
+    MethodEntity *m;
+    switch (lookup_method_entity(pce, this, &m)) {
+        case METHODFOUND:
+            if (pt->kind() == INSTANCE_TYPE && !m->static_flag()) {
+                m = NULL;
+                // TODO Set appropriate error message
+                // Error "Accessing non-static member function"
+                break;
+            }
+            return m->return_type();
+        
+        case EMETHODNOTFOUND:
+            // TODO Set appropriate error message
+            // Error "Method not found"
+            break;
+        
+        case EMULTIPLEDECL:
+            // TODO Set appropriate error message
+            // Error "Multiple Declaration found for method"
+            break;
+        
+        case EPRIVATEACCESS:
+            // TODO Set appropriate error message
+            // Error "Trying to access private member function"
+            break;
     }
 
     return(new ErrorType());
