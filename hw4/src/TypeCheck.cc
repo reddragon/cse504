@@ -102,6 +102,9 @@ lookup_entity(ClassEntity *pc, std::string name, int depth, int &found_at) {
     return lookup_entity(pc->superclass(), name, depth+1, found_at);
 }
 
+#define ERROR_GUARD(T) if (isErrorType(T)) { return T; }
+#define ERROR_GUARD_NO_RETURN(T) if (isErrorType(T)) { return; }
+
 enum MethodInvocationResult { METHODFOUND=0, EMETHODNOTFOUND, EMULTIPLEDECL, EPRIVATEACCESS };
 
 MethodInvocationResult
@@ -280,9 +283,10 @@ void ReturnStatement::typecheck() {
     }
 
     Type *expr = this->expr()->typeinfer();
+    ERROR_GUARD_NO_RETURN(expr);
 
-    if (!areSameTypes(expr, current_method->return_type()) && !isErrorType(expr)) {
-        error->type_error(this->lineno(), "Return type of function and return statement do NOT match. Got", expr);
+    if (!areSameTypes(expr, current_method->return_type())) {
+        error->type_error(this->lineno(), "Return type of function and return statement do NOT match", expr);
     }
 }
 
