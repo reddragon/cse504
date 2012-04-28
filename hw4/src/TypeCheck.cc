@@ -473,13 +473,16 @@ Type* FieldAccess::typeinfer() {
 // Typeinfer method for MethodInvocation
 Type* MethodInvocation::typeinfer() {
     Type *pt = this->base()->typeinfer();
+    ERROR_GUARD(pt);
+    
+    /*
     cout<<"method invocation::base.name: ";
     pt->print();
     cout<<'.'<<this->name();
     cout<<endl;
+    */
 
     if (!(pt->kind() == INSTANCE_TYPE || pt->kind() == CLASS_TYPE)) {
-        // Error "Invalid base type. Excepted INSTANCE or CLASS type"
         cout<<"Error: Invalid base type '"; 
         pt->print();
         cout<<"'. Excepted INSTANCE or CLASS type"<<endl;
@@ -488,27 +491,26 @@ Type* MethodInvocation::typeinfer() {
     
     ClassEntity *pce = pt->kind() == INSTANCE_TYPE ? ((InstanceType*)pt)->classtype() : ((ClassType*)pt)->classtype();
     MethodEntity *m;
+
     switch (lookup_method_entity(pce, this, &m)) {
         case METHODFOUND:
-            if (pt->kind() == CLASS_TYPE && m->static_flag()) {
+            if (pt->kind() == INSTANCE_TYPE && m->static_flag()) {
                 m = NULL;
-                // TODO Set appropriate error message
-                cout<<"Error: Accessing static member function in method '"<<this->name()<<"'"<<endl;
+                error->type_error(this->lineno(), "Invalid access of static member function ", (char *)this->name());
                 break;
             }
             return m->return_type();
         
         case EMETHODNOTFOUND:
-            // TODO Set appropriate error message
-            cout<<"Error: Method '"<<this->name()<<"' was not found"<<endl;
+            error->type_error(this->lineno(), "Could not find a matching method for ", (char *)this->name());
             break;
 
         case EMULTIPLEDECL:
-            cout<<"Error: Multiple Declarations found for method '"<<this->name()<<"'"<<endl;
+            error->type_error(this->lineno(), "Multiple declarations found for method ", (char *)this->name());
             break;
         
         case EPRIVATEACCESS:
-            cout<<"Error: Trying to access private member function '"<<this->name()<<"'"<<endl;
+            error->type_error(this->lineno(), "Trying to access private member function ", (char *)this->name());
             break;
     }
 
