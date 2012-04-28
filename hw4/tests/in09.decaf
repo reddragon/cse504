@@ -1,0 +1,21 @@
+// Testing constructors
+class A {
+	int a;
+
+	A() {
+	}
+	
+	private A(int a, int b) {
+	}
+}
+
+class B {
+	public static void main() {
+		A a;
+		a = new A();
+		A b;
+		b = new A(3, 4);
+		A c;
+		c = new A("xyz");
+	}
+}
