@@ -483,10 +483,10 @@ Type* MethodInvocation::typeinfer() {
     MethodEntity *m;
     switch (lookup_method_entity(pce, this, &m)) {
         case METHODFOUND:
-            if (pt->kind() == INSTANCE_TYPE && !m->static_flag()) {
+            if (pt->kind() == CLASS_TYPE && m->static_flag()) {
                 m = NULL;
                 // TODO Set appropriate error message
-                cout<<"Error: Accessing non-static member function in method '"<<this->name()<<"'"<<endl;
+                cout<<"Error: Accessing static member function in method '"<<this->name()<<"'"<<endl;
                 break;
             }
             return m->return_type();
