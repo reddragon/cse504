@@ -1,0 +1,63 @@
+// For, While & If Statement Checks
+class Test {
+	boolean canMove() {
+	}
+
+	public static void main() {
+		// Should pass
+		for (;;) {
+		}
+		
+		// Should pass
+		for (;canMove();) {
+		}
+
+		// Should pass
+		boolean c;
+		c = false;
+		for (;c==false;) {
+		}
+		
+		int x, y, z;
+		float g, h, i;
+		// Should report 3 errors
+		for (x = g; ; g++) {
+			if (!h) {
+			}
+		}
+
+		// Should pass
+		while (true) {
+		}
+
+		// Should pass
+		while (c) {
+		}
+
+		// Should report 1 error
+		while (x) {
+			g++;
+		}
+
+		// Should report 1 error
+		while (c) {
+			g++;
+		}
+		
+		// Should pass
+		if (c) {
+		}
+
+		// Should give 1 error
+		if (x) {
+		}
+
+		// Should give 2 errors
+		if (c) {
+			g++;
+		}
+		else {
+			g++;
+		}
+	}
+}
