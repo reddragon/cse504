@@ -105,14 +105,14 @@ lookup_entity(ClassEntity *pc, std::string name, int depth, int &found_at) {
 #define ERROR_GUARD(T) if (isErrorType(T)) { return T; }
 #define ERROR_GUARD_NO_RETURN(T) if (isErrorType(T)) { return; }
 
-enum MethodInvocationResult { METHODFOUND=0, EMETHODNOTFOUND, EMULTIPLEDECL, EPRIVATEACCESS };
+enum MethodInvocationResult { METHODFOUND=0, EMNOTFOUND, EMMULTIPLEDECL, EMPRIVATEACCESS };
 
 MethodInvocationResult
 lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
     // Method not found
     if (pc == NULL) {
         *m = NULL;
-        return EMETHODNOTFOUND;
+        return EMNOTFOUND;
     }
 
     int count = 0;
@@ -127,7 +127,7 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
                         // are calling it from is not a method of the
                         // class in which it exists.
                         *m = NULL;
-                        return EPRIVATEACCESS;
+                        return EMPRIVATEACCESS;
                     }
 
                     count = count + 1;
@@ -136,7 +136,7 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
                     // Multiple matching Method Invocations
                     if (count > 1) {
                         *m = NULL;
-                        return EMULTIPLEDECL;
+                        return EMMULTIPLEDECL;
                     }
                 }
             }
@@ -545,15 +545,15 @@ Type* MethodInvocation::typeinfer() {
             }
             return m->return_type();
         
-        case EMETHODNOTFOUND:
+        case EMNOTFOUND:
             error->type_error(this->lineno(), "Could not find a matching method for ", (char *)this->name());
             break;
 
-        case EMULTIPLEDECL:
+        case EMMULTIPLEDECL:
             error->type_error(this->lineno(), "Multiple declarations found for method ", (char *)this->name());
             break;
         
-        case EPRIVATEACCESS:
+        case EMPRIVATEACCESS:
             error->type_error(this->lineno(), "Trying to access private member function ", (char *)this->name());
             break;
     }
