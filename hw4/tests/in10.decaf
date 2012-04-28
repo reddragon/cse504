@@ -1,0 +1,37 @@
+class Base {
+    private int x;
+    public int y;
+
+    public int length() {
+        return 0;
+    }
+
+    private int bar() {
+        return 1;
+    }
+}
+
+class Derived extends Base {
+
+    void foo() {
+        int z;
+
+        z = this.length;
+        z = super.length;
+
+        z = this.bar;
+        z = super.bar;
+
+        z = this.x;
+        z = this.y;
+
+        z = super.x;
+        z = super.y;
+
+        z = this.length();
+        z = this.bar();
+
+        z = super.length();
+        z = super.bar();
+    }
+}

@@ -86,7 +86,7 @@ bool isValidNewInstance(NewInstance* pni, ConstructorEntity* pce) {
 }
 
 Entity*
-lookup_entity(ClassEntity *pc, std::string name, int depth, int &found_at) {
+lookup_field(ClassEntity *pc, std::string name, int depth, int &found_at) {
     found_at = depth;
     if (pc == NULL) {
         return NULL;
@@ -94,12 +94,12 @@ lookup_entity(ClassEntity *pc, std::string name, int depth, int &found_at) {
 
     for (list<Entity*>::iterator i = pc->class_members()->begin(); 
          i != pc->class_members()->end(); ++i) {
-        if (name == (*i)->name()) {
+        if (name == (*i)->name() && (*i)->kind() == FIELD_ENTITY) {
             return *i;
         }
     }
 
-    return lookup_entity(pc->superclass(), name, depth+1, found_at);
+    return lookup_field(pc->superclass(), name, depth+1, found_at);
 }
 
 #define ERROR_GUARD(T) if (isErrorType(T)) { return T; }
@@ -473,7 +473,7 @@ Type* FieldAccess::typeinfer() {
 
     ClassEntity *pce = pt->kind() == INSTANCE_TYPE ? ((InstanceType*)pt)->classtype() : ((ClassType*)pt)->classtype();
     int found_at = 0;
-    FieldEntity *e = (FieldEntity*)lookup_entity(pce, this->name(), 0, found_at);
+    FieldEntity *e = (FieldEntity*)lookup_field(pce, this->name(), 0, found_at);
 
     if (!e) {
         // Field 'e' not found
@@ -503,7 +503,7 @@ Type* FieldAccess::typeinfer() {
         assert(current_class);
 
         // cerr<<"Checking for private field '"<<this->name()<<"'\n";
-        // cerr<<"found_at: "<<found_at<<endl;
+        // cerr<<"found_at level: "<<found_at<<endl;
 
         if (found_at > 0 || strcmp(pce->name(), current_class->name())) {
             error->syntax_error(this->lineno(), "Error: Trying to access private member '" + string(this->name()) + "' of class '" + pce->name() + "'");
@@ -656,11 +656,12 @@ Type* ThisExpression::typeinfer() {
 
 // Typeinfer method for SuperExpression
 Type* SuperExpression::typeinfer() {
-    if (current_constructor || current_method->static_flag()) {
+    if (current_constructor || !current_method->static_flag()) {
         return new InstanceType(current_class->superclass());
     }
-    else
+    else {
         return new ClassType(current_class->superclass());
+    }
 }
 
 // Typeinfer method for IdExpression
