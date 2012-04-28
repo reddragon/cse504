@@ -242,7 +242,7 @@ void IfStatement::typecheck() {
     Type* expr = this->expr()->typeinfer();
 
     if (!isBooleanType(expr) && !isErrorType(expr)) {
-        error->type_error(this->lineno(), "Expected bool", expr);
+        error->type_error(this->lineno(), "Expected boolean", expr);
     }
 
     this->thenpart()->typecheck();
@@ -520,14 +520,20 @@ Type* MethodInvocation::typeinfer() {
 // Typeinfer method for UnaryExpression
 Type* UnaryExpression::typeinfer() {
     Type* type = this->arg()->typeinfer();
+    ERROR_GUARD(type);
+
     switch (this->unary_operator()) {
         case NEG:
-            // TODO: Remove assertion and replace with an actual error.
-            assert(isOfType(type, BOOLEAN_TYPE));
+            if (!isOfType(type, BOOLEAN_TYPE)) {
+                error->type_error(this->lineno(), "Expected boolean", type);
+                return(new ErrorType());
+            }
             return new BooleanType();
         case UMINUS:
-            // TODO: Remove assertion and replace with an actual error.
-            assert(isNumericType(type));
+            if (!(isNumericType(type))) {
+                error->type_error(this->lineno(), "Expected int or float", type);
+                return(new ErrorType());
+            }
             return type;
     }
     return(new ErrorType());
@@ -539,11 +545,12 @@ Type* UnaryExpression::typeinfer() {
 Type* AutoExpression::typeinfer() {
     Type* type = this->arg()->typeinfer();
     ERROR_GUARD(type);
-    // TODO: Remove assertion and replace with an actual error.
+    
     if (!isOfType(type, INT_TYPE)) {
         error->type_error(this->lineno(), "Expected int", type);
         return(new ErrorType());
     }
+    
     return new IntType();
 }
 
@@ -573,12 +580,15 @@ Type* NewInstance::typeinfer() {
     switch (lookup_constructor_entity(this->class_entity(), this, &c)) {
         case CFOUND:
             return new InstanceType(this->class_entity());
+
         case ECNOTFOUND:
             error->type_error(this->lineno(), "Could not find a matching constructor for the constructor of class ", (char *)this->class_entity()->name());
             break;
+        
         case ECMULTIPLEDECL:
             error->type_error(this->lineno(), "Multiple declarations of constructors of the same type in the class ", (char *)this->class_entity()->name());
             break;
+        
         case ECPRIVATEACCESS:
             error->type_error(this->lineno(), "Invalid invocation of a private constructor of the class ", (char *)this->class_entity()->name());
             break;
