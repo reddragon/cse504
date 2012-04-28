@@ -1,0 +1,31 @@
+// Testing constructors
+
+class SuperA {
+	SuperA () {
+	}
+
+	SuperA (boolean a) {
+	}
+}
+
+class A extends SuperA {
+	int a;
+
+	A() {
+	}
+	
+	private A(int a, int b) {
+	}
+}
+
+class B {
+	public static void main() {
+		A a;
+		a = new A();
+		A b;
+		b = new A(3, 4);
+		A c;
+		boolean d;
+		c = new A(d);
+	}
+}
