@@ -330,12 +330,23 @@ void SkipStatement::typecheck() {
 Type* BinaryExpression::typeinfer() {
     Type* lhs_type = this->lhs()->typeinfer();
     Type* rhs_type = this->rhs()->typeinfer();
+
+    if (isErrorType(lhs_type) || isErrorType(rhs_type)) {
+        return new ErrorType();
+    }
+
     switch (this->binary_operator()) {
         case ADD:
         case SUB:
         case MUL:
         case DIV:
-            // TODO: Remove assertion and replace with an actual error.
+            // FIXME: Remove assertion and replace with an actual error.
+            // cout<<"lhs type: ";
+            // lhs_type->print();
+            // cout<<endl<<"rhs type: ";
+            // rhs_type->print();
+            // cout<<std::endl;
+
             assert(isNumericType(lhs_type) && isNumericType(rhs_type));
             if (isOfType(lhs_type, FLOAT_TYPE) || isOfType(rhs_type, FLOAT_TYPE))
                 return new FloatType();
@@ -350,11 +361,18 @@ Type* BinaryExpression::typeinfer() {
         
         case EQ:
         case NEQ:
-            assert(lhs_type->isSubtypeOf(rhs_type));
+            // cout<<"lhs type: ";
+            // lhs_type->print();
+            // cout<<endl<<"rhs type: ";
+            // rhs_type->print();
+            // cout<<std::endl;
+            // FIXME: Replace with error
+            assert(lhs_type->isSubtypeOf(rhs_type) || rhs_type->isSubtypeOf(lhs_type));
             return new BooleanType();
 
         case AND:
         case OR:
+            // FIXME: Replace with error
             assert(isOfType(lhs_type, BOOLEAN_TYPE) && isOfType(rhs_type, BOOLEAN_TYPE));
             return new BooleanType();
     }
@@ -548,11 +566,12 @@ Type* NewInstance::typeinfer() {
 
 // Typeinfer method for ThisExpression
 Type* ThisExpression::typeinfer() {
-    if (current_constructor || current_method->static_flag()) {
+    if (current_constructor || !current_method->static_flag()) {
         return new InstanceType(current_class);
     }
-    else
+    else {
         return new ClassType(current_class);
+    }
 }
 
 
