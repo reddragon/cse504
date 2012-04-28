@@ -476,6 +476,9 @@ Type* MethodInvocation::typeinfer() {
 
     if (!(pt->kind() == INSTANCE_TYPE || pt->kind() == CLASS_TYPE)) {
         // Error "Invalid base type. Excepted INSTANCE or CLASS type"
+        cout<<"Error: Invalid base type '"; 
+        pt->print();
+        cout<<"'. Excepted INSTANCE or CLASS type"<<endl;
         return new ErrorType();
     }
     
