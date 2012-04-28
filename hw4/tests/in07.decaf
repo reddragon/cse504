@@ -1,0 +1,43 @@
+class B{
+ int a;
+ float k;
+ void check(float p){
+     
+ }
+}
+class A extends B{
+    //static int a;
+    int b;
+	B g;
+    boolean c;
+    boolean d;
+    int arr[][][];
+    A(){
+        if (a==b){
+            a=9;
+        }
+		g.k++;
+        check();
+        check(1.5);
+    }
+    int check(){
+        if (a==b){
+            a=b;
+            c=!d;
+            a++;
+            //c++;
+            arr = new int[6][8][7];
+            A a;
+            a=new A();
+            B sec;
+            sec = new A();
+        }
+        while(a=b){
+        }
+        int i;
+        for(i=0;i<5;i++);
+    }
+    int check(int a){
+        a=0;
+    }
+}

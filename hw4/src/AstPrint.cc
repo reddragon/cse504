@@ -332,7 +332,7 @@ void ClassType::print() {
 // Print method for InstanceType
 void InstanceType::print() {
     // FIXME::Undo
-    cout<<"InstanceType::"<<std::flush;
+    // cout<<"InstanceType::"<<std::flush;
     classtype()->print_name();
 }
 
