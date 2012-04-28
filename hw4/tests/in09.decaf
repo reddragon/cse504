@@ -1,5 +1,14 @@
 // Testing constructors
-class A {
+
+class SuperA {
+	SuperA () {
+	}
+
+	SuperA (boolean a) {
+	}
+}
+
+class A extends SuperA {
 	int a;
 
 	A() {
@@ -16,6 +25,7 @@ class B {
 		A b;
 		b = new A(3, 4);
 		A c;
-		c = new A("xyz");
+		boolean d;
+		c = new A(d);
 	}
 }
