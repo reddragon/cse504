@@ -291,7 +291,7 @@ void ReturnStatement::typecheck() {
     Type *expr = this->expr()->typeinfer();
     ERROR_GUARD_NO_RETURN(expr);
 
-    if (!areSameTypes(expr, current_method->return_type())) {
+    if (!current_method->return_type()->isSubtypeOf(expr)) {
         error->type_error(this->lineno(), "Return type of function and return statement do NOT match", expr);
         return;
     }
@@ -424,7 +424,7 @@ Type* AssignExpression::typeinfer() {
     ERROR_GUARD(lhs_type);
     ERROR_GUARD(rhs_type);
 
-    if (rhs_type->isSubtypeOf(lhs_type)) {
+    if (!rhs_type->isSubtypeOf(lhs_type)) {
         error->type_error(this->lineno(), "Expected subtype", lhs_type);
         return new ErrorType;
     }
