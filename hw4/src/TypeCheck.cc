@@ -86,7 +86,8 @@ bool isValidNewInstance(NewInstance* pni, ConstructorEntity* pce) {
 }
 
 Entity*
-lookup_entity(ClassEntity *pc, std::string name) {
+lookup_entity(ClassEntity *pc, std::string name, int depth, int &found_at) {
+    found_at = depth;
     if (pc == NULL) {
         return NULL;
     }
@@ -98,7 +99,7 @@ lookup_entity(ClassEntity *pc, std::string name) {
         }
     }
 
-    return lookup_entity(pc->superclass(), name);
+    return lookup_entity(pc->superclass(), name, depth+1, found_at);
 }
 
 enum MethodInvocationResult { METHODFOUND=0, EMETHODNOTFOUND, EMULTIPLEDECL, EPRIVATEACCESS };
@@ -407,15 +408,24 @@ Type* ArrayAccess::typeinfer() {
 // Typeinfer method for FieldAccess:
 Type* FieldAccess::typeinfer() {
     // Fetch the InstanceType based on this->base()
+    // cout<<"field access: base.name: ";
+    // this->base()->print();
+    // cout<<'.'<<this->name()<<endl;
+
     Type *pt = this->base()->typeinfer();
     if (!(pt->kind() == INSTANCE_TYPE || pt->kind() == CLASS_TYPE)) {
         // Error "Invalid base type. Excepted INSTANCE or CLASS type"
+        cout<<"Expceted INSTANCE or CLASS type while infering type for '";
+        this->base()->print();
+        cout<<endl;
+
         return new ErrorType();
     }
 
     ClassEntity *pce = pt->kind() == INSTANCE_TYPE ? ((InstanceType*)pt)->classtype() : ((ClassType*)pt)->classtype();
-    FieldEntity *e = (FieldEntity*)lookup_entity(pce, this->name());
-    
+    int found_at = 0;
+    FieldEntity *e = (FieldEntity*)lookup_entity(pce, this->name(), 0, found_at);
+
     // TODO Replace by an error message
     // Field 'e' not found
     assert(e);
@@ -440,12 +450,13 @@ Type* FieldAccess::typeinfer() {
         // TODO Remove this assert after testing
         // current_class should always be set
         assert(current_class);
-        
-        if (!strcmp(pce->name(), current_class->name())) {
-            // okay
-        } else {
-            // "Trying to access private member " +
-            // string(this->name()) + " of class " + pce->name()
+
+        // cerr<<"Checking for private field '"<<this->name()<<"'\n";
+        // cerr<<"found_at: "<<found_at<<endl;
+
+        if (found_at > 0 || strcmp(pce->name(), current_class->name())) {
+            cout<<"Error: Trying to access private member '"<<
+                string(this->name())<<"' of class '"<<pce->name()<<"'"<<endl;
             return new ErrorType();
         }
     }
@@ -458,6 +469,11 @@ Type* FieldAccess::typeinfer() {
 // Typeinfer method for MethodInvocation
 Type* MethodInvocation::typeinfer() {
     Type *pt = this->base()->typeinfer();
+    cout<<"method invocation::base.name: ";
+    pt->print();
+    cout<<'.'<<this->name();
+    cout<<endl;
+
     if (!(pt->kind() == INSTANCE_TYPE || pt->kind() == CLASS_TYPE)) {
         // Error "Invalid base type. Excepted INSTANCE or CLASS type"
         return new ErrorType();
@@ -470,24 +486,22 @@ Type* MethodInvocation::typeinfer() {
             if (pt->kind() == INSTANCE_TYPE && !m->static_flag()) {
                 m = NULL;
                 // TODO Set appropriate error message
-                // Error "Accessing non-static member function"
+                cout<<"Error: Accessing non-static member function in method '"<<this->name()<<"'"<<endl;
                 break;
             }
             return m->return_type();
         
         case EMETHODNOTFOUND:
             // TODO Set appropriate error message
-            // Error "Method not found"
+            cout<<"Error: Method '"<<this->name()<<"' was not found"<<endl;
             break;
-        
+
         case EMULTIPLEDECL:
-            // TODO Set appropriate error message
-            // Error "Multiple Declaration found for method"
+            cout<<"Error: Multiple Declarations found for method '"<<this->name()<<"'"<<endl;
             break;
         
         case EPRIVATEACCESS:
-            // TODO Set appropriate error message
-            // Error "Trying to access private member function"
+            cout<<"Error: Trying to access private member function '"<<this->name()<<"'"<<endl;
             break;
     }
 
