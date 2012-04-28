@@ -425,7 +425,7 @@ Type* AssignExpression::typeinfer() {
     ERROR_GUARD(rhs_type);
 
     if (!rhs_type->isSubtypeOf(lhs_type)) {
-        error->type_error(this->lineno(), "Expected subtype", lhs_type);
+        error->type_error(this->lineno(), "Two incompatible types are used in assignment", rhs_type, lhs_type);
         return new ErrorType;
     }
     return rhs_type;
