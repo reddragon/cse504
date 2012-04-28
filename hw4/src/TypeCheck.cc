@@ -240,8 +240,9 @@ void ConstructorEntity::typecheck() {
 // Typecheck method for IfStatement
 void IfStatement::typecheck() {
     Type* expr = this->expr()->typeinfer();
+    ERROR_GUARD_NO_RETURN(expr);
 
-    if (!isBooleanType(expr) && !isErrorType(expr)) {
+    if (!isBooleanType(expr)) {
         error->type_error(this->lineno(), "Expected BOOLEAN", expr);
     }
 
@@ -252,8 +253,9 @@ void IfStatement::typecheck() {
 // Typecheck method for WhileStatement
 void WhileStatement::typecheck() {
     Type* expr = this->expr()->typeinfer();
+    ERROR_GUARD_NO_RETURN(expr);
 
-    if (!isBooleanType(expr) && !isErrorType(expr)) {
+    if (!isBooleanType(expr)) {
         error->type_error(this->lineno(), "Expected BOOLEAN", expr);
     }
 
@@ -265,8 +267,9 @@ void WhileStatement::typecheck() {
 // Typecheck method for ForStatement
 void ForStatement::typecheck() {
     Type* guard = this->guard()->typeinfer();
+    ERROR_GUARD_NO_RETURN(guard);
 
-    if (!isBooleanType(guard) && !isErrorType(guard)) {
+    if (!isBooleanType(guard)) {
         error->type_error(this->lineno(), "Expected BOOLEAN", guard);
     }
 
@@ -294,8 +297,9 @@ void ReturnStatement::typecheck() {
 // Typecheck method for BlockStatement
 void BlockStatement::typecheck() {
     list<Statement *>::iterator it = this->stmt_list()->begin();
-    for(; it != this->stmt_list()->end(); it++) 
+    for(; it != this->stmt_list()->end(); it++) {
         (*it)->typecheck();
+    }
 }
 
 // Typecheck method for ExprStatement
@@ -335,10 +339,8 @@ void SkipStatement::typecheck() {
 Type* BinaryExpression::typeinfer() {
     Type* lhs_type = this->lhs()->typeinfer();
     Type* rhs_type = this->rhs()->typeinfer();
-
-    if (isErrorType(lhs_type) || isErrorType(rhs_type)) {
-        return new ErrorType();
-    }
+    ERROR_GUARD(lhs_type);
+    ERROR_GUARD(rhs_type);
 
     switch (this->binary_operator()) {
         case ADD:
@@ -377,11 +379,19 @@ Type* BinaryExpression::typeinfer() {
 
         case AND:
         case OR:
-            // FIXME: Replace with error
-            assert(isOfType(lhs_type, BOOLEAN_TYPE) && isOfType(rhs_type, BOOLEAN_TYPE));
-            return new BooleanType();
+            if (!isOfType(lhs_type, BOOLEAN_TYPE)) {
+                error->type_error(this->lineno(), "Expected boolean", lhs_type);
+                return new ErrorType;
+            }
+
+            if (!isOfType(rhs_type, BOOLEAN_TYPE)) {
+                error->type_error(this->lineno(), "Expected boolean", rhs_type);
+                return new ErrorType;
+            }
+
+            return new BooleanType;
     }
-    return(new ErrorType());
+    return new ErrorType;
 }
 
 
@@ -390,8 +400,13 @@ Type* BinaryExpression::typeinfer() {
 Type* AssignExpression::typeinfer() {
     Type* lhs_type = this->lhs()->typeinfer();
     Type* rhs_type = this->rhs()->typeinfer();
-    // TODO: Remove assertion and replace with an actual error.
-    assert(lhs_type->isSubtypeOf(rhs_type));
+    ERROR_GUARD(lhs_type);
+    ERROR_GUARD(rhs_type);
+
+    if (rhs_type->isSubtypeOf(lhs_type)) {
+        error->type_error(this->lineno(), "Expected subtype", lhs_type);
+        return new ErrorType;
+    }
     return rhs_type;
 }
 
@@ -401,9 +416,19 @@ Type* AssignExpression::typeinfer() {
 Type* ArrayAccess::typeinfer() {
     Type* base_type = this->base()->typeinfer();
     Type* idx_type = this->idx()->typeinfer();
-    // TODO: Remove assertion and replace with an actual error.
-    assert(isOfType(base_type, ARRAY_TYPE));
-    assert(isOfType(idx_type, INT_TYPE));
+    ERROR_GUARD(base_type);
+    ERROR_GUARD(idx_type);
+
+    if (!isOfType(base_type, ARRAY_TYPE)) {
+        error->type_error(this->lineno(), "Expected array", base_type);
+        return new ErrorType;
+    }
+
+    if (!isOfType(idx_type, INT_TYPE)) {
+        error->type_error(this->lineno(), "Expected int", idx_type);
+        return new ErrorType;
+    }
+
     ArrayType* array = (ArrayType *)this->base()->typeinfer();
     return array->elementtype();
 }
@@ -417,22 +442,23 @@ Type* FieldAccess::typeinfer() {
     // cout<<'.'<<this->name()<<endl;
 
     Type *pt = this->base()->typeinfer();
+    ERROR_GUARD(pt);
+
     if (!(pt->kind() == INSTANCE_TYPE || pt->kind() == CLASS_TYPE)) {
         // Error "Invalid base type. Excepted INSTANCE or CLASS type"
-        cout<<"Expceted INSTANCE or CLASS type while infering type for '";
-        this->base()->print();
-        cout<<endl;
-
-        return new ErrorType();
+        error->type_error(this->lineno(), "Expceted instance or class type while infering type", pt);
+        return new ErrorType;
     }
 
     ClassEntity *pce = pt->kind() == INSTANCE_TYPE ? ((InstanceType*)pt)->classtype() : ((ClassType*)pt)->classtype();
     int found_at = 0;
     FieldEntity *e = (FieldEntity*)lookup_entity(pce, this->name(), 0, found_at);
 
-    // TODO Replace by an error message
-    // Field 'e' not found
-    assert(e);
+    if (!e) {
+        // Field 'e' not found
+        error->syntax_error(this->lineno(), "Field named '" + string(this->name()) + "' was not found");
+        return new ErrorType;
+    }
 
     bool is_public = e->visibility_flag();
     bool is_static = e->static_flag();
@@ -459,8 +485,7 @@ Type* FieldAccess::typeinfer() {
         // cerr<<"found_at: "<<found_at<<endl;
 
         if (found_at > 0 || strcmp(pce->name(), current_class->name())) {
-            cout<<"Error: Trying to access private member '"<<
-                string(this->name())<<"' of class '"<<pce->name()<<"'"<<endl;
+            error->syntax_error(this->lineno(), "Error: Trying to access private member '" + string(this->name()) + "' of class '" + pce->name() + "'");
             return new ErrorType();
         }
     }
