@@ -28,6 +28,29 @@ lookup_entity(ClassEntity *pc, std::string name) {
     return lookup_entity(pc->superclass(), name);
 }
 
+enum { METHODFOUND=0, EMETHODNOTFOUND, EMULTIPLEDECL, EINVALIDACCESS } MethodInvocationResult;
+
+MethodInvocationResult
+lookup_method_entity(ClassEntity* pc, MethodInvocation* mi, MethodEntity** m) {
+    // Method not found
+    if (pc == NULL) {
+        *m = NULL;
+        return EMETHODNOTFOUND;
+    }
+
+    int count = 0;
+    for (list<Entity*>::iterator i = pc->class_members()->begin();
+        i != pc->class_members()->end(); ++i) {
+            if ((*i)->kind() == METHOD_ENTITY) {
+                
+            }
+        }
+    
+    if (!count)
+        return lookup_entity(pc->superclass(), name);
+}
+
+
 Entity*
 get_class_entity(const char *name) {
     for (list<Entity*>::iterator i = toplevel->begin(); 
@@ -314,6 +337,10 @@ Type* MethodInvocation::typeinfer() {
         // Error "Invalid base type. Excepted INSTANCE or CLASS type"
         return new ErrorType();
     }
+    
+    ClassEntity *pce = pt->kind() == INSTANCE_TYPE ? ((InstanceType*)pt)->classtype() : ((ClassType*)pt)->classtype();
+    MethodEntity *m;
+    find
 
     return(new ErrorType());
 }
