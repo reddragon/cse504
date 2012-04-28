@@ -524,11 +524,13 @@ Primary:
         $$ = $2;
     }
     | TOK_NEW TOK_ID TOK_OPEN_PAREN ArgumentListOpt TOK_CLOSE_PAREN {
-        // FIXME Complete this
-        // TOK_ID is a class. 
-        // FIXME: Check if TOK_ID has been declared in the scope.
-        Entity *class_entity = NULL; 
-        // FIXME: Lookup symbol table.
+        // Check if TOK_ID has been declated as a class.
+        entity_ref_t e = find_class($2);
+        if (!e.first) {
+            sprintf(error_str, "On line %d, declaration for class '%s' was not found", yylineno, $2);
+            report_error();
+        }
+        Entity *class_entity = e.first;
         $$ = new NewInstance(class_entity, $4);
     }
     | LeftHandSide {
