@@ -242,7 +242,7 @@ void IfStatement::typecheck() {
     Type* expr = this->expr()->typeinfer();
 
     if (!isBooleanType(expr) && !isErrorType(expr)) {
-        error->type_error(this->lineno(), "Expected BOOLEAN", expr);
+        error->type_error(this->lineno(), "Expected bool", expr);
     }
 
     this->thenpart()->typecheck();
@@ -538,8 +538,12 @@ Type* UnaryExpression::typeinfer() {
 // Typeinfer method for AutoExpression
 Type* AutoExpression::typeinfer() {
     Type* type = this->arg()->typeinfer();
+    ERROR_GUARD(type);
     // TODO: Remove assertion and replace with an actual error.
-    assert(isOfType(type, INT_TYPE));
+    if (!isOfType(type, INT_TYPE)) {
+        error->type_error(this->lineno(), "Expected int", type);
+        return(new ErrorType());
+    }
     return new IntType();
 }
 
