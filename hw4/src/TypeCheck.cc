@@ -392,7 +392,7 @@ Type* BinaryExpression::typeinfer() {
             // cout<<endl<<"rhs type: ";
             // rhs_type->print();
             // cout<<std::endl;
-            if (!lhs_type->isSubtypeOf(rhs_type) || rhs_type->isSubtypeOf(lhs_type)) {
+            if (!lhs_type->isSubtypeOf(rhs_type) && !rhs_type->isSubtypeOf(lhs_type)) {
                 error->type_error(this->lineno(), "Binary (in)equality", lhs_type, rhs_type);
                 return new ErrorType;
             }
