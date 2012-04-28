@@ -67,6 +67,23 @@ bool isValidMethodInvocation(MethodInvocation *pmi, MethodEntity *pme) {
     return true;
 }
 
+bool isValidNewInstance(NewInstance* pni, ConstructorEntity* pce) {
+    if (pni->args()->size() != pce->formal_params()->size()) {
+        return false;
+    }
+
+    list<Expression*>::iterator j = pni->args()->begin();
+    for (list<Entity*>::iterator i = pce->formal_params()->begin(); 
+         i != pce->formal_params()->end(); ++i) {
+        VariableEntity *pparam = (VariableEntity*)(*i);
+        if (!pparam->type()->isSubtypeOf((*j)->typeinfer())) {
+            return false;
+        }
+        ++j;
+    }
+    return true;
+
+}
 
 Entity*
 lookup_entity(ClassEntity *pc, std::string name) {
@@ -100,8 +117,10 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
             if ((*i)->kind() == METHOD_ENTITY) {
                 if (isValidMethodInvocation(pmi, (MethodEntity *)*i)) {
                     
-                    // Is a private function
-                    if (!((MethodEntity *)(*i))->visibility_flag()) {
+                    // Is a private function, and,
+                    // the method we are calling it from is not
+                    // a method of the class in which it exists.
+                    if (!((MethodEntity *)(*i))->visibility_flag() && (current_class != pc)) {
                         *m = NULL;
                         return EPRIVATEACCESS;
                     }
@@ -111,7 +130,7 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
                     
                     // Multiple matching Method Invocations
                     if (count > 1) {
-                        m = NULL;
+                        *m = NULL;
                         return EMULTIPLEDECL;
                     }
                 }
@@ -126,6 +145,52 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
     if (!count)
         return lookup_method_entity(pc->superclass(), pmi, m);
 }
+
+enum NewInstanceResult { CFOUND=0, ECNOTFOUND, ECMULTIPLEDECL, ECPRIVATEACCESS };
+
+NewInstanceResult
+lookup_constructor_entity(ClassEntity* pc, NewInstance* pni, ConstructorEntity** c) {
+    // Method not found
+    if (pc == NULL) {
+        *c = NULL;
+        return ECNOTFOUND;
+    }
+
+    int count = 0;
+    for (list<Entity*>::iterator i = pc->class_members()->begin();
+        i != pc->class_members()->end(); ++i) {
+            if ((*i)->kind() == CONSTRUCTOR_ENTITY) {
+                if (isValidNewInstance(pni, (ConstructorEntity *)*i)) {
+                    
+                    // Is a private function, and,
+                    // the method we are calling it from is not
+                    // a method of the class in which it exists.
+                    if (!((ConstructorEntity *)(*i))->visibility_flag() && (current_class != pc)) {
+                        *c = NULL;
+                        return ECPRIVATEACCESS;
+                    }
+
+                    count = count + 1;
+                    *c = (ConstructorEntity*) (*i);
+                    
+                    // Multiple matching Method Invocations
+                    if (count > 1) {
+                        *c = NULL;
+                        return ECMULTIPLEDECL;
+                    }
+                }
+            }
+        }
+    
+    // One matching function found
+    if (count == 1) {
+        return CFOUND;
+    }
+    
+    *c = NULL;
+    return ECNOTFOUND;
+}
+
 
 Entity*
 get_class_entity(const char *name) {
@@ -458,7 +523,24 @@ Type* NewArrayInstance::typeinfer() {
 
 // Typeinfer method for NewInstance:
 Type* NewInstance::typeinfer() {
-    
+    ConstructorEntity *c;
+    switch (lookup_constructor_entity(this->class_entity(), this, &c)) {
+        case CFOUND:
+            return new InstanceType(this->class_entity());
+        case ECNOTFOUND:
+            // TODO Set appropriate error message
+            // Error "Constructor not found"
+            break;
+        case ECMULTIPLEDECL:
+            // TODO Set appropriate error message
+            // Error "Multiple declarations of the same constructor"
+            break;
+        case ECPRIVATEACCESS:
+            // TODO Set appropriate error message
+            // Error "Accessing a private constructor"
+            break;
+    }
+    return  (new ErrorType());
 }
 
 
