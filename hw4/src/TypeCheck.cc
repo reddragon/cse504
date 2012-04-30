@@ -520,7 +520,7 @@ Type* FieldAccess::typeinfer() {
         // cerr<<"found_at level: "<<found_at<<endl;
 
         if (found_at > 0 || strcmp(pce->name(), current_class->name())) {
-            error->syntax_error(this->lineno(), "Error: Trying to access private member '" + string(this->name()) + "' of class '" + pce->name() + "'");
+            error->syntax_error(this->lineno(), "Trying to access private member '" + string(this->name()) + "' of class '" + pce->name() + "'");
             return new ErrorType();
         }
     }
