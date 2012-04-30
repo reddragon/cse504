@@ -105,7 +105,7 @@ lookup_field(ClassEntity *pc, std::string name, int depth, int &found_at) {
 #define ERROR_GUARD(T) if (isErrorType(T)) { return T; }
 #define ERROR_GUARD_NO_RETURN(T) if (isErrorType(T)) { return; }
 
-enum MethodInvocationResult { METHODFOUND=0, EMNOTFOUND, EMMULTIPLEDECL, EMPRIVATEACCESS };
+enum MethodInvocationResult { METHODFOUND=0, EMNOTFOUND, EMMULTIPLEDECL, EMPRIVATEACCESS, EMSTATICACCESS };
 
 MethodInvocationResult
 lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
@@ -129,6 +129,20 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
                         *m = NULL;
                         return EMPRIVATEACCESS;
                     }
+
+                    // TODO: Check if this is correct
+                    if (current_method->static_flag() && 
+                        !(((MethodEntity*)(*i))->static_flag()) &&
+                        current_class == pc) {
+                        // If we are calling a non-static method from
+                        // a static method of the same class, we cannot
+                        // do so.
+                        *m = NULL;
+                        return EMSTATICACCESS;
+                    }
+
+                    // TODO: Figure out if we need to do
+                    // the same for the opposite case.
 
                     count = count + 1;
                     *m = (MethodEntity*) (*i);
@@ -556,6 +570,11 @@ Type* MethodInvocation::typeinfer() {
         case EMPRIVATEACCESS:
             error->type_error(this->lineno(), "Trying to access private member function ", (char *)this->name());
             break;
+        
+        case EMSTATICACCESS:
+            error->type_error(this->lineno(), "Trying to access a static member function '" + (string)(this->name()) + "' from a non-static member function '" + (string)(current_method->name()), (char *)"'");
+            break;
+
     }
 
     return(new ErrorType());
