@@ -1,0 +1,13 @@
+// Checking for Static-ness
+class Test {
+	int p;
+	static int x;
+	public static void main() {
+		x = 5;
+		p = 9;	
+	}
+
+	public int foo() {
+		x = 9;	
+	}
+}
