@@ -9,6 +9,7 @@ using namespace std;
 // Prototypes to lexer functions
 extern void yyerror (const char *error);
 extern int  yylex ();
+extern int yylineno;
 
 // interface to the outside world
 extern list<Entity *> *toplevel;  // list of top-level classes
@@ -17,6 +18,7 @@ extern ClassEntity* objectclass;   // top-level "Object" class
 
 // Global vars to simulate certain inherited attributes
 Type *current_type;
+int tmp;
 
 %}
 
@@ -317,9 +319,11 @@ Stmt:	  TOK_IF TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt OptElsePart
 	    $$ = new IfStatement($3, $5, $6);
 	  }
 
-	| TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN Stmt
+        | TOK_WHILE TOK_OPEN_PAREN Expr TOK_CLOSE_PAREN { tmp = yylineno; } Stmt
 	  {
-	    $$ = new WhileStatement($3, $5);
+            std::swap(yylineno, tmp);
+	    $$ = new WhileStatement($3, $6);
+            std::swap(yylineno, tmp);
 	  }
 
 	| TOK_FOR TOK_OPEN_PAREN StmtExprOpt
