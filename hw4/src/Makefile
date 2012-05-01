@@ -3,7 +3,7 @@ COMMON_DIR = ..
 include_dir = $(COMMON_DIR)/include
 objects = TypeCheck.o Types.o driver.o Symbols.o AstSymbols.o Ast.o AstPrint.o Error.o lex.yy.o decaf.tab.o
 CXX = g++
-CXXFLAGS = -Wno-deprecated -g -I$(include_dir)
+CXXFLAGS = -Wno-deprecated -g -I$(include_dir) -Wall
 includes = $(include_dir)/Ast.hh $(include_dir)/AstSymbols.hh $(include_dir)/Symbols.hh
 
 main:	$(objects) 
