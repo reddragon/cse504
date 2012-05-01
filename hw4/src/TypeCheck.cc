@@ -500,8 +500,10 @@ Type* FieldAccess::typeinfer() {
     if (!is_static) {
         // non-static field
 
+        // fprintf(stderr, "non-static field %s, kind: %d (INSTANCE: %d, CLASS: %d)\n", this->name(), pt->kind(), INSTANCE_TYPE, CLASS_TYPE);
         // Check if base is an InstanceType
         if (pt->kind() != INSTANCE_TYPE) {
+            error->syntax_error(this->lineno(), "Expected access to static field, but '" + string(this->name()) + "' is non-static");
             return new ErrorType();
         }
 
