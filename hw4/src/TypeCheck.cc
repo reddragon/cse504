@@ -131,12 +131,12 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
                     }
 
                     // TODO: Check if this is correct
-                    if (current_method->static_flag() && 
-                        !(((MethodEntity*)(*i))->static_flag()) &&
-                        current_class == pc) {
+                    if (pmi->base()->typeinfer()->kind() == CLASS_TYPE &&
+                        !(((MethodEntity*)(*i))->static_flag())) {
                         // If we are calling a non-static method from
                         // a static method of the same class, we cannot
                         // do so.
+                        //assert(pmi->base
                         *m = NULL;
                         return EMSTATICACCESS;
                     }
