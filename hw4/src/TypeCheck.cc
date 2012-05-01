@@ -579,7 +579,7 @@ Type* MethodInvocation::typeinfer() {
 
     }
 
-    return(new ErrorType());
+    return new ErrorType;
 }
 
 
