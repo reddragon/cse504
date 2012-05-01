@@ -115,7 +115,7 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
         return EMNOTFOUND;
     }
 
-    int count = 0;
+    unsigned int count = 0;
     for (list<Entity*>::iterator i = pc->class_members()->begin();
         i != pc->class_members()->end(); ++i) {
             if ((*i)->kind() == METHOD_ENTITY) {
@@ -150,7 +150,7 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
                     // Multiple matching Method Invocations
                     if (count > 1) {
                         *m = NULL;
-                        return EMMULTIPLEDECL;
+                        break;
                     }
                 }
             }
@@ -159,9 +159,10 @@ lookup_method_entity(ClassEntity* pc, MethodInvocation* pmi, MethodEntity** m) {
     // One matching function found
     if (count == 1) {
         return METHODFOUND;
-    }
-    
-    if (!count) {
+    } else if (count > 1) {
+        return EMMULTIPLEDECL;
+    } else {
+        // count == 0
         return lookup_method_entity(pc->superclass(), pmi, m);
     }
 }
@@ -234,6 +235,8 @@ void ClassEntity::typecheck() {
             case CONSTRUCTOR_ENTITY:
                 ((ConstructorEntity*)(*it))->typecheck();
                 break;
+            default:
+                break;
         }
     }
     current_class = NULL;
@@ -254,11 +257,9 @@ void ConstructorEntity::typecheck() {
 // Typecheck method for IfStatement
 void IfStatement::typecheck() {
     Type* expr = this->expr()->typeinfer();
-    ERROR_GUARD_NO_RETURN(expr);
 
-    if (!isBooleanType(expr)) {
+    if (!isBooleanType(expr) && !isErrorType(expr)) {
         error->type_error(this->lineno(), "Expected boolean", expr);
-        return;
     }
 
     this->thenpart()->typecheck();
@@ -268,11 +269,9 @@ void IfStatement::typecheck() {
 // Typecheck method for WhileStatement
 void WhileStatement::typecheck() {
     Type* expr = this->expr()->typeinfer();
-    ERROR_GUARD_NO_RETURN(expr);
 
-    if (!isBooleanType(expr)) {
+    if (!isBooleanType(expr) && !isErrorType(expr)) {
         error->type_error(this->lineno(), "Expected boolean", expr);
-        return;
     }
 
     this->body()->typecheck();
@@ -283,11 +282,9 @@ void WhileStatement::typecheck() {
 // Typecheck method for ForStatement
 void ForStatement::typecheck() {
     Type* guard = this->guard()->typeinfer();
-    ERROR_GUARD_NO_RETURN(guard);
 
-    if (!isBooleanType(guard)) {
+    if (!isBooleanType(guard) && !isErrorType(guard)) {
         error->type_error(this->lineno(), "Expected boolean", guard);
-        return;
     }
 
     this->init()->typecheck();
@@ -426,7 +423,10 @@ Type* BinaryExpression::typeinfer() {
 
             return new BooleanType;
     }
+
+    error->implementation_error("BinaryExpression::typeinfer: Control should not reach here");
     return new ErrorType;
+
 }
 
 
@@ -692,6 +692,9 @@ Type* IdExpression::typeinfer() {
             return new ClassType((ClassEntity *)this->id());
         case VARIABLE_ENTITY:
             return ((VariableEntity *)(this->id()))->type();
+        default:
+            error->implementation_error("IdExpression::typeinfer: Control should not reach here");
+            return new ErrorType;
     }
 }
 
